@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.3.9)  10 MAR 2026 16:58
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.3.9)  10 MAR 2026 18:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -675,7 +675,7 @@ pen/ec/ecbx1095.600pk> </home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jkn
 appen/ec/ecrm1440.600pk> </home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/j
 knappen/ec/ecbx2074.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/ams
 fonts/cm/cmsy10.pfb>
-Output written on main.pdf (24 pages, 176129 bytes).
+Output written on main.pdf (24 pages, 176118 bytes).
 PDF statistics:
  1000 PDF objects out of 1000 (max. 8388607)
  570 compressed objects within 6 object streams
