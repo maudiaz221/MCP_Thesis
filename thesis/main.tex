@@ -1,0 +1,141 @@
+\documentclass[12pt,letterpaper]{article}
+
+% Encoding and language
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+
+% Page geometry
+\usepackage[left=1.5in,right=1.5in,top=1in,bottom=1in]{geometry}
+
+% Math
+\usepackage{amsmath,amssymb}
+
+% Graphics and tables
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{float}
+
+% Code listings
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{green!50!black},
+  stringstyle=\color{red!60!black},
+  showstringspaces=false,
+  tabsize=2
+}
+
+% Hyperlinks
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  citecolor=green!50!black,
+  urlcolor=blue!70!black
+}
+
+% Bibliography
+\usepackage[round,authoryear]{natbib}
+
+% Spacing
+\usepackage{setspace}
+\onehalfspacing
+
+% Caption formatting
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+% ============================================================
+% Title page info
+% ============================================================
+\title{
+  \vspace{-2cm}
+  \textbf{Evaluación Comparativa de Ejecución de Código MCP vs Llamadas Directas en Sistemas Multi-Agente}
+  \vspace{1cm}
+}
+\author{
+  % TODO: Author name \\
+  % TODO: University / Program \\
+  % TODO: Advisor
+}
+\date{2026}
+
+% ============================================================
+\begin{document}
+
+% --- Title page ---
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% --- Abstract ---
+\begin{abstract}
+\noindent
+% TODO: Resumen en español (~250 palabras)
+% Contexto del problema, metodología, resultados principales, conclusión.
+\textit{Resumen pendiente de redacción.}
+
+\vspace{1em}
+\noindent\textbf{Palabras clave:} MCP, ejecución de código, sistemas multi-agente, evaluación comparativa, consumo de tokens.
+
+\vspace{2em}
+\noindent\textbf{Abstract.}
+% TODO: English abstract (~250 words)
+\textit{Abstract pending.}
+
+\vspace{1em}
+\noindent\textbf{Keywords:} MCP, code execution, multi-agent systems, comparative evaluation, token consumption.
+\end{abstract}
+\newpage
+
+% --- Table of contents ---
+\tableofcontents
+\newpage
+
+% --- Chapters ---
+\input{chapters/01-introduccion}
+\newpage
+
+\input{chapters/02-revision-literatura}
+\newpage
+
+\input{chapters/03-marco-teorico}
+\newpage
+
+\input{chapters/04-diseno-experimental}
+\newpage
+
+\input{chapters/05-metodologia}
+\newpage
+
+\input{chapters/06-resultados}
+\newpage
+
+\input{chapters/07-modelo-decision}
+\newpage
+
+\input{chapters/08-discusion}
+\newpage
+
+\input{chapters/09-conclusiones}
+\newpage
+
+% --- Bibliography ---
+\bibliographystyle{plainnat}
+\bibliography{references}
+\newpage
+
+% --- Appendix ---
+\appendix
+\input{chapters/apendice}
+
+\end{document}

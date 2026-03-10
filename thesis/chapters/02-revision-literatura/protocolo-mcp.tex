@@ -1,0 +1,149 @@
+\subsection{Protocolo MCP (Model Context Protocol)}
+
+\subsubsection{Origen y motivación}
+
+A medida que los LLMs se integraron en aplicaciones de producción, surgió un
+problema recurrente: cada fuente de datos o herramienta externa requería una
+implementación personalizada para conectarse con el modelo. Un agente que
+necesitaba acceder a una base de datos, un sistema de archivos y una API de
+terceros debía implementar tres conectores distintos, cada uno con su propia
+lógica de autenticación, serialización y manejo de errores. Esta fragmentación
+hacía que la construcción de sistemas verdaderamente conectados fuera difícil de
+escalar \citep{anthropic2024mcp}.
+
+En noviembre de 2024, Anthropic introdujo el Model Context Protocol (MCP) como
+un estándar abierto para resolver este problema. MCP proporciona un protocolo
+uniforme para conectar aplicaciones de inteligencia artificial con los sistemas
+donde residen los datos, estableciendo conexiones bidireccionales y seguras
+entre fuentes de datos y aplicaciones basadas en LLMs
+\citep{anthropic2024mcp}. La analogía oficial del protocolo lo compara con un
+puerto USB-C: así como USB-C estandarizó la conexión entre dispositivos
+electrónicos, MCP estandariza la conexión entre aplicaciones de IA y sistemas
+externos \citep{mcpspec2024}.
+
+\subsubsection{Arquitectura cliente-servidor}
+
+MCP sigue una arquitectura cliente-servidor con tres participantes principales
+\citep{mcpspec2024}:
+
+\begin{itemize}
+    \item \textbf{MCP Host}: la aplicación de IA que coordina y gestiona uno o
+    múltiples clientes MCP. Ejemplos incluyen Claude Desktop, Visual Studio
+    Code con Copilot, Cursor y Claude Code.
+
+    \item \textbf{MCP Client}: un componente dentro del host que mantiene una
+    conexión dedicada con un servidor MCP específico. El host instancia un
+    cliente por cada servidor al que se conecta.
+
+    \item \textbf{MCP Server}: un programa que expone datos, herramientas o
+    plantillas de interacción a los clientes MCP. Los servidores pueden
+    ejecutarse localmente (en la misma máquina que el host) o de forma remota
+    (en un servidor web).
+\end{itemize}
+
+Esta separación permite que un mismo host se conecte simultáneamente a
+múltiples servidores ---por ejemplo, un servidor de sistema de archivos local,
+un servidor de base de datos y un servidor remoto de Sentry--- manteniendo
+conexiones independientes y aisladas para cada uno.
+
+\subsubsection{Capas del protocolo}
+
+El protocolo se estructura en dos capas conceptuales \citep{mcpspec2024}:
+
+\paragraph{Capa de datos.} Implementa un protocolo de intercambio basado en
+JSON-RPC 2.0 \citep{jsonrpc2010spec} que define la estructura y semántica de
+los mensajes. Esta capa incluye:
+
+\begin{itemize}
+    \item \textbf{Gestión del ciclo de vida}: manejo de la inicialización de
+    conexión, negociación de capacidades y terminación. Durante la
+    inicialización, cliente y servidor intercambian sus capacidades soportadas
+    (herramientas, recursos, prompts) y versión del protocolo mediante un
+    handshake formal.
+
+    \item \textbf{Primitivas de servidor}: los tres tipos fundamentales de
+    contexto que un servidor puede exponer:
+    \begin{itemize}
+        \item \textit{Tools} (herramientas): funciones ejecutables que la
+        aplicación de IA puede invocar para realizar acciones ---operaciones
+        de archivos, consultas a bases de datos, llamadas a APIs.
+        \item \textit{Resources} (recursos): fuentes de datos que proveen
+        información contextual ---contenido de archivos, registros de base
+        de datos, respuestas de APIs.
+        \item \textit{Prompts} (plantillas): templates reutilizables que
+        estructuran las interacciones con el modelo.
+    \end{itemize}
+
+    \item \textbf{Primitivas de cliente}: capacidades que el cliente expone al
+    servidor, incluyendo \textit{sampling} (solicitar completions al LLM del
+    host), \textit{elicitation} (solicitar información adicional al usuario) y
+    \textit{logging} (enviar mensajes de depuración).
+
+    \item \textbf{Notificaciones}: mensajes en tiempo real que permiten a los
+    servidores informar a los clientes sobre cambios sin necesidad de polling
+    ---por ejemplo, cuando la lista de herramientas disponibles cambia
+    dinámicamente.
+\end{itemize}
+
+\paragraph{Capa de transporte.} Define los mecanismos de comunicación entre
+clientes y servidores. MCP soporta dos mecanismos de transporte:
+
+\begin{itemize}
+    \item \textbf{Stdio}: utiliza flujos de entrada/salida estándar para
+    comunicación directa entre procesos locales en la misma máquina. Ofrece
+    rendimiento óptimo sin overhead de red y es el mecanismo típico para
+    servidores locales.
+
+    \item \textbf{Streamable HTTP}: utiliza HTTP POST para mensajes del cliente
+    al servidor con Server-Sent Events (SSE) opcionales para streaming.
+    Habilita la comunicación con servidores remotos y soporta métodos estándar
+    de autenticación HTTP.
+\end{itemize}
+
+La capa de transporte abstrae los detalles de comunicación, permitiendo que el
+mismo formato de mensajes JSON-RPC 2.0 funcione de manera idéntica sobre
+cualquier mecanismo de transporte.
+
+\subsubsection{Flujo de interacción}
+
+Una interacción típica entre un cliente y un servidor MCP sigue una secuencia
+bien definida \citep{mcpspec2024}:
+
+\begin{enumerate}
+    \item \textbf{Inicialización}: el cliente envía una solicitud
+    \texttt{initialize} con su versión del protocolo y capacidades soportadas.
+    El servidor responde con las suyas. Ambas partes negocian qué primitivas
+    y funcionalidades estarán disponibles durante la sesión.
+
+    \item \textbf{Descubrimiento de herramientas}: el cliente invoca
+    \texttt{tools/list} para obtener la lista completa de herramientas
+    disponibles, incluyendo nombre, descripción y schema de entrada
+    (\texttt{inputSchema}) definido como JSON Schema para cada una.
+
+    \item \textbf{Ejecución de herramientas}: cuando el LLM del host decide
+    utilizar una herramienta, el cliente envía una solicitud
+    \texttt{tools/call} con el nombre de la herramienta y sus argumentos. El
+    servidor ejecuta la operación y retorna el resultado como un arreglo de
+    objetos de contenido (texto, imágenes, recursos).
+
+    \item \textbf{Actualización dinámica}: si la lista de herramientas cambia
+    durante la sesión, el servidor envía una notificación
+    \texttt{notifications/tools/list\_changed} y el cliente solicita la lista
+    actualizada.
+\end{enumerate}
+
+\subsubsection{Adopción del ecosistema}
+
+Desde su lanzamiento, MCP ha experimentado una adopción amplia tanto en la
+industria como en la comunidad open-source. En el lanzamiento inicial,
+Anthropic publicó la especificación abierta, SDKs para Python y TypeScript, y
+servidores de referencia para Google Drive, Slack, GitHub, Git, Postgres y
+Puppeteer \citep{anthropic2024mcp}. Empresas como Block y Apollo integraron
+el protocolo en sus operaciones, mientras que plataformas de desarrollo como
+Zed, Replit, Codeium y Sourcegraph lo adoptaron para mejorar las capacidades
+contextuales de sus herramientas de IA.
+
+A la fecha, MCP cuenta con soporte en aplicaciones como Claude Desktop,
+ChatGPT, Visual Studio Code, Cursor y numerosos clientes adicionales
+\citep{mcpspec2024}, consolidándose como el estándar de facto para la
+integración de herramientas en sistemas basados en LLMs.

@@ -1,0 +1,66 @@
+\subsection{Planteamiento del Problema}
+
+El Model Context Protocol ha logrado estandarizar la manera en que los LLMs
+interactúan con herramientas externas, proporcionando un marco uniforme para el
+descubrimiento, invocación y manejo de resultados de herramientas. Sin embargo,
+a pesar de sus ventajas como estándar de interoperabilidad, el mecanismo
+convencional de \textit{tool calling} sobre MCP presenta limitaciones
+estructurales que comprometen su escalabilidad en aplicaciones de producción
+\citep{anthropic2024codeexec}.
+
+El primer problema es la \textbf{carga estática de definiciones de herramientas}
+(\textit{static tool loading}). En el paradigma convencional de tool calling,
+todas las definiciones de herramientas disponibles ---incluyendo nombres,
+descripciones, parámetros y schemas--- deben cargarse en la ventana de contexto
+del modelo \textit{antes} de que este procese la solicitud del usuario. Esto
+significa que, en escenarios donde un agente está conectado a múltiples
+servidores MCP con decenas o cientos de herramientas, el modelo debe procesar
+cientos de miles de tokens de definiciones antes de siquiera leer la tarea
+encomendada. \citet{anthropic2024codeexec} señalan que, con 150,000 tokens de
+definiciones de herramientas, los agentes desperdician contexto significativo en
+descripciones que en su mayoría no serán utilizadas para la tarea actual.
+
+El segundo problema es el \textbf{tránsito obligatorio de resultados intermedios
+por el contexto del modelo}. En una secuencia de llamadas a herramientas donde
+el resultado de una alimenta la entrada de la siguiente, cada resultado
+intermedio debe pasar por la ventana de contexto del modelo para ser
+interpretado y reformulado como entrada de la siguiente llamada. Esto implica
+que los mismos datos son procesados múltiples veces.
+\citet{anthropic2024codeexec} ilustran este problema con un ejemplo concreto:
+en un flujo de recuperación y actualización de documentos, la transcripción
+completa de una llamada fluye por el contexto dos veces; para una reunión de
+ventas de dos horas, esto podría significar procesar 50,000 tokens adicionales
+innecesarios. En el caso de documentos extensos o estructuras de datos
+complejas, este patrón puede incluso exceder los límites de la ventana de
+contexto, haciendo la tarea irrealizable.
+
+El tercer problema es la \textbf{propensión a errores en la manipulación de
+datos entre llamadas}. Cuando un modelo debe copiar datos de la respuesta de una
+herramienta hacia los parámetros de la siguiente, la probabilidad de errores de
+transcripción aumenta proporcionalmente con el volumen y la complejidad de los
+datos. \citet{anthropic2024codeexec} advierten que, con documentos extensos o
+estructuras de datos complejas, los modelos son más propensos a cometer errores
+al copiar datos entre llamadas a herramientas.
+
+Estos tres problemas ---carga estática, tránsito redundante de datos y errores
+de transcripción--- comparten una raíz común: el \textbf{acoplamiento entre la
+orquestación de herramientas y la ventana de contexto del modelo}. En el
+paradigma convencional, el contexto del modelo cumple una doble función: es
+simultáneamente el espacio de razonamiento del LLM y el canal de comunicación
+entre herramientas. Esta doble función genera una tensión fundamental entre la
+cantidad de herramientas disponibles y la eficiencia con que se utiliza el
+contexto.
+
+\citet{anthropic2024codeexec} proponen como alternativa la ejecución de código,
+donde el modelo genera programas que orquestan las llamadas a herramientas en un
+entorno externo, descubriendo y cargando definiciones bajo demanda en lugar de
+estáticamente. Este enfoque reporta reducciones de hasta 98.7\% en consumo de
+tokens ---de 150,000 a 2,000 tokens--- en escenarios con grandes conjuntos de
+herramientas. Sin embargo, esta cifra proviene de un caso de uso específico y no
+constituye una evaluación sistemática a través de diferentes tipos de tareas,
+niveles de complejidad y configuraciones de servidores.
+
+La pregunta central de esta investigación es, por tanto: \textbf{¿bajo qué
+condiciones la ejecución de código a través de MCP supera a las llamadas
+directas en términos de consumo de tokens, latencia y precisión, y cómo se
+pueden predecir estas condiciones a partir de las características de la tarea?}

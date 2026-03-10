@@ -1,0 +1,71 @@
+\subsection{Contexto}
+
+Los modelos de lenguaje de gran escala (LLMs, por sus siglas en inglés) han alcanzado
+un nivel de capacidad sin precedentes en los últimos años. Modelos como GPT-5
+\citep{openai2025gpt5}, Claude Opus 4.6 \citep{anthropic2025opus} y Gemini 3
+\citep{google2025gemini3} demuestran desempeño competitivo en razonamiento
+matemático, generación de código, análisis de texto y resolución de problemas
+complejos. En múltiples escalas académicos y profesionales, estos sistemas
+igualan o superan el rendimiento humano en tareas que hace pocos años se
+consideraban fuera del alcance de la inteligencia artificial.
+
+Sin embargo, conforme las capacidades fundamentales de los LLMs se consolidan,
+la frontera de investigación y desarrollo se ha desplazado hacia un problema
+distinto: la \textbf{gestión eficiente del contexto}. La ventana de contexto
+---el espacio limitado de tokens que un modelo puede procesar en una sola
+interacción--- se ha convertido en el recurso más valioso y escaso en
+aplicaciones para LLM's. Cada token consumido representa un costo económico
+directo, una contribución a la latencia de respuesta y una porción del espacio
+disponible para información relevante. En este sentido, el desafío ya no es si
+un LLM \textit{puede} resolver una tarea, sino \textit{cuán eficientemente}
+se puede minimizar el gasto al resolver dicha tarea.
+
+Este problema se intensifica con la adopción de \textbf{sistemas agénticos}, en
+los cuales un LLM no opera de forma aislada sino que interactúa con herramientas
+externas ---bases de datos, APIs, sistemas de archivos, servicios web--- para
+completar tareas del mundo real. El atributo dominante para esta interacción es
+el \textit{tool calling}: el modelo recibe las definiciones (schemas) de las
+herramientas disponibles dentro de su contexto, selecciona cuál invocar, genera
+los parámetros apropiados para dicha tarea, recibe el resultado, y continúa su razonamiento.
+Cada ciclo de este proceso consume tokens: las descripciones de herramientas,
+los parámetros serializados, las respuestas intermedias y el historial acumulado
+de la conversación compiten por espacio dentro de la ventana de contexto.
+
+En 2024, Anthropic introdujo el \textbf{Model Context Protocol} (MCP), un
+protocolo abierto que estandariza la comunicación entre LLMs y servidores de
+herramientas \citep{anthropic2024mcp}. MCP define una interfaz cliente-servidor
+basada en JSON-RPC que permite a los modelos descubrir e invocar herramientas de
+manera uniforme, independientemente de su implementación subyacente
+\citep{mcpspec2024}. La adopción del protocolo ha crecido rápidamente en la
+industria, estableciéndose como un estándar de facto para la integración de
+herramientas en sistemas basados en LLMs.
+
+Dentro del ecosistema MCP, han emergido dos paradigmas fundamentalmente
+distintos para la ejecución de tareas que requieren herramientas:
+
+\begin{enumerate}
+    \item \textbf{Llamadas directas a herramientas}: el modelo invoca
+    herramientas individuales a través de MCP, una por una, acumulando
+    resultados en su contexto a lo largo de múltiples turnos de interacción.
+
+    \item \textbf{Ejecución de código}: el modelo genera un programa
+    ---típicamente en Python--- que orquesta múltiples llamadas a herramientas
+    dentro de un entorno de ejecución aislado (\textit{sandbox}), retornando
+    únicamente el resultado final al contexto del modelo
+    \citep{anthropic2024codeexec}.
+\end{enumerate}
+
+Ambos paradigmas resuelven el mismo problema funcional ---conectar un LLM con
+herramientas externas--- pero difieren radicalmente en cómo utilizan la ventana
+de contexto. Las llamadas directas cargan todas las definiciones de herramientas
+y resultados intermedios en el contexto del modelo; la ejecución de código
+delega la orquestación a un programa externo, reduciendo potencialmente el
+número de tokens consumidos a cambio de un overhead inicial de generación de
+código y ejecución en sandbox.
+
+Esta distinción tiene implicaciones directas en las tres dimensiones que
+determinan la viabilidad de un sistema agéntico en producción: el
+\textbf{consumo de tokens} (costo económico), la \textbf{latencia} (experiencia
+del usuario) y la \textbf{precisión} (confiabilidad del sistema). No obstante,
+hasta la fecha no existe un estudio sistemático que cuantifique estos trade-offs
+de manera controlada y reproducible en sistemas agenticos. El presente trabajo busca llenar este vacío.

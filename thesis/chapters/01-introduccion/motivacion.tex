@@ -1,0 +1,64 @@
+\subsection{Motivación}
+
+La resolución de los problemas descritos en la sección anterior no es un
+ejercicio puramente teórico. Las limitaciones del tool calling convencional
+sobre MCP tienen consecuencias tangibles que justifican una investigación
+sistemática desde múltiples perspectivas.
+
+\subsubsection{Impacto económico}
+
+En aplicaciones de producción, cada token procesado por un LLM tiene un costo
+monetario directo. Los proveedores de modelos ---OpenAI, Anthropic, Google,
+Amazon--- facturan por millón de tokens de entrada y de salida, con precios que
+varían según el modelo pero que en todos los casos escalan linealmente con el
+consumo. Cuando un agente conectado a múltiples servidores MCP carga
+estáticamente 150,000 tokens de definiciones de herramientas en cada
+interacción, ese costo se repite en \textit{cada solicitud del usuario},
+independientemente de cuántas herramientas se utilicen realmente. A escala
+---miles de usuarios, millones de solicitudes diarias--- la diferencia entre
+una arquitectura que consume 150,000 tokens y una que consume 2,000 tokens por
+interacción puede representar órdenes de magnitud en costos operativos. Sin
+embargo, no existe una cuantificación rigurosa de estos ahorros a través de
+diferentes tipos de tareas y configuraciones, lo cual impide que las
+organizaciones tomen decisiones informadas sobre su arquitectura.
+
+\subsubsection{Ausencia de guías para desarrolladores}
+
+El ecosistema de desarrollo de sistemas agénticos carece de criterios empíricos
+para elegir entre llamadas directas y ejecución de código. Un desarrollador que
+diseña un sistema basado en MCP enfrenta una decisión arquitectónica
+fundamental al inicio del proyecto: ¿debe su agente llamar herramientas
+directamente, o debe generar código que las orqueste? Esta decisión tiene
+implicaciones profundas en el diseño del sistema, la infraestructura necesaria
+(sandbox de ejecución, seguridad, monitoreo) y el comportamiento en producción.
+Actualmente, esta elección se basa en intuición, anécdotas o en las
+recomendaciones de un único artículo técnico \citep{anthropic2024codeexec}, sin
+un marco cuantitativo que relacione las características de la tarea con el modo
+de ejecución óptimo.
+
+\subsubsection{Crecimiento acelerado del ecosistema MCP}
+
+Desde su introducción en 2024, el Model Context Protocol ha experimentado una
+adopción acelerada. Empresas como Anthropic, Amazon Web Services, Microsoft y
+múltiples startups han construido servidores MCP para sus plataformas, y la
+comunidad open-source ha contribuido cientos de implementaciones que cubren
+desde bases de datos hasta APIs de servicios en la nube
+\citep{anthropic2024mcp}. Esta proliferación de servidores y herramientas
+agrava directamente el problema de la carga estática: conforme un agente se
+conecta a más servidores, el volumen de definiciones de herramientas en su
+contexto crece proporcionalmente. Lo que hoy es un problema manejable con un
+puñado de herramientas se convertirá en un cuello de botella crítico conforme
+el ecosistema madure y los agentes necesiten acceso a decenas de servidores
+simultáneamente.
+
+\subsubsection{Vacío en la literatura académica}
+
+A pesar de la rápida adopción industrial del protocolo MCP y de los patrones de
+ejecución de código, la literatura académica no ha abordado de manera
+sistemática la comparación entre estos dos paradigmas de ejecución. Existen
+benchmarks para evaluar la capacidad general de tool-use de los LLMs, así como
+evaluaciones de sistemas multi-agente en tareas específicas, pero ninguno se
+enfoca en el eje particular de \textit{cómo} se ejecutan las herramientas y su
+impacto en eficiencia. Esta ausencia de evidencia empírica deja un vacío que
+este trabajo busca llenar mediante un diseño experimental controlado,
+reproducible y extensible por la comunidad.
