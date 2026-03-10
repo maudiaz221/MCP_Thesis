@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1773158485.51853 "main.aux" "main.bbl" "main" 1773165610.00515 0
+["bibtex main"] 1773178454.58796 "main.aux" "main.bbl" "main" 1773178455.19149 0
   "./references.bib" 1773155940.49481 2387 45a43bd2e10f3429cdab17d751475856 ""
   "/usr/share/texlive/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1233624470 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "main.aux" 1773165609.90346 10293 617b511e077436f5beee4a8a0610da77 "pdflatex"
+  "main.aux" 1773178455.08887 10260 0fa7bd6329e1bd46fabcf0d0cbb06a45 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1773165609.42468 "main.tex" "main.pdf" "main" 1773165610.00544 0
+["pdflatex"] 1773178454.60179 "main.tex" "main.pdf" "main" 1773178455.19176 0
   "/etc/texmf/web2c/texmf.cnf" 1773071021.50255 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1095.600pk" 1773071287.17739 28952 f854317a1b003ff55be6529873627137 ""
   "/home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk" 1773071285.97839 31928 dfe7e92930a4ba1c9f3e1fc48824f545 ""
@@ -137,7 +137,7 @@
   "chapters/01-introduccion/hipotesis.tex" 1773071801.60276 347 e69564452b457117e98f227be28179d1 ""
   "chapters/01-introduccion/motivacion.tex" 1773081436.72038 3875 b4e7afda87f1710a1c4ed01a0724bc37 ""
   "chapters/01-introduccion/objetivos.tex" 1773071800.33386 427 59371f509dad670f128dac0ac72d9102 ""
-  "chapters/01-introduccion/planteamiento.tex" 1773080530.53734 4348 7a0fc94af38667446bc1c92ae008e3bc ""
+  "chapters/01-introduccion/planteamiento.tex" 1773178445.71825 4122 c53c61af66065fff70246b076ac56522 ""
   "chapters/02-revision-literatura.tex" 1773071894.72953 310 446e7bedbd6f504b6ba624c3953f63f5 ""
   "chapters/02-revision-literatura/benchmarks.tex" 1773071814.16531 240 b00a0b320417028b579f0234d6d63ac7 ""
   "chapters/02-revision-literatura/ejecucion-codigo.tex" 1773071809.82232 337 bfa0c41c1bfefe3638f2ce9f6e40809c ""
@@ -187,11 +187,11 @@
   "chapters/apendice/esquemas-servidores.tex" 1773071885.43965 130 fc905aea7b54376594ae5022352259e3 ""
   "chapters/apendice/prompts.tex" 1773071886.45184 168 1778090703c7fe95dc3c03f7a0ea3102 ""
   "chapters/apendice/tablas-resultados.tex" 1773071884.00629 155 154e007a2266649a48e94ab06d8cf605 ""
-  "main.aux" 1773165609.90346 10293 617b511e077436f5beee4a8a0610da77 "pdflatex"
-  "main.bbl" 1773158485.53188 1809 ae8cf359ade8bb4df608e3542f229451 "bibtex main"
-  "main.out" 1773165609.90513 11203 9f6708b12cfa335c73166c92f42aeb42 "pdflatex"
-  "main.tex" 1773080876.43937 2830 551165394bd9e4a23ea5ccfea3f9f24a ""
-  "main.toc" 1773165609.90568 6089 3eb7548f56054f303cfac72029c8a46f "pdflatex"
+  "main.aux" 1773178455.08887 10260 0fa7bd6329e1bd46fabcf0d0cbb06a45 "pdflatex"
+  "main.bbl" 1773178454.59994 1809 ae8cf359ade8bb4df608e3542f229451 "bibtex main"
+  "main.out" 1773178455.09036 11203 9f6708b12cfa335c73166c92f42aeb42 "pdflatex"
+  "main.tex" 1773166085.17428 2830 35ce6ae92e83fceb7024c51ff5f8d16e ""
+  "main.toc" 1773178455.09119 6089 3eb7548f56054f303cfac72029c8a46f "pdflatex"
   (generated)
   "main.aux"
   "main.log"
