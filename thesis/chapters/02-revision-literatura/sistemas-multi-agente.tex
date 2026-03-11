@@ -1,4 +1,138 @@
 \subsection{Sistemas Multi-Agente}
-% TODO: Topologías de agentes: orquestador, enjambre (swarm), pipeline.
-% Frameworks: AutoGen, CrewAI, LangGraph, Strands.
-% Patrones de comunicación y delegación.
+
+A medida que las tareas asignadas a agentes basados en LLMs crecen en
+complejidad, un único agente con acceso a todas las herramientas disponibles
+enfrenta limitaciones fundamentales: la ventana de contexto se satura con
+definiciones de herramientas, la especialización se diluye, y la coordinación
+de subtareas heterogéneas recae enteramente en las capacidades de razonamiento
+del modelo. Los sistemas multi-agente abordan estas limitaciones mediante la
+descomposición de tareas complejas en subtareas asignadas a agentes
+especializados, cada uno con un conjunto reducido de herramientas y un rol
+claramente definido.
+
+\subsubsection{Topologías de orquestación}
+
+La literatura y los frameworks existentes han convergido en tres topologías
+principales para organizar sistemas multi-agente:
+
+\paragraph{Orquestador centralizado.} Un agente coordinador recibe la tarea
+principal, la descompone en subtareas y las delega a agentes especializados. El
+orquestador mantiene el estado global de la tarea y sintetiza los resultados
+parciales en una respuesta coherente. Esta topología ofrece control explícito
+sobre el flujo de ejecución, pero introduce un cuello de botella: todo el
+contexto intermedio debe pasar por el orquestador, incrementando el consumo de
+tokens. Es el patrón utilizado en las configuraciones A3 y A4 de esta tesis,
+donde un agente principal delega a sub-agentes especializados por servidor MCP.
+
+\paragraph{Enjambre (swarm).} En esta topología, los agentes se transfieren el
+control mutuamente sin un coordinador central. Cada agente decide, basándose en
+su salida, a qué agente transferir la tarea siguiente. OpenAI popularizó este
+patrón con su framework experimental Swarm, donde las funciones de handoff
+determinan dinámicamente el flujo de ejecución. La ventaja es la flexibilidad y
+la ausencia de un punto único de fallo; la desventaja es la dificultad de
+garantizar convergencia y la opacidad del flujo de ejecución.
+
+\paragraph{Pipeline/DAG.} Los agentes se organizan en un grafo acíclico
+dirigido (DAG) con dependencias explícitas entre nodos. Cada nodo representa un
+agente o una transformación, y las aristas definen el flujo de datos. Esta
+topología es natural para workflows deterministas donde el orden de ejecución
+es predecible ---por ejemplo, extracción $\rightarrow$ transformación
+$\rightarrow$ carga. LangGraph \citep{langgraph2024} implementa esta topología
+como su abstracción principal.
+
+Los trade-offs entre estas topologías se resumen en la capacidad de
+coordinación versus la complejidad del sistema. El orquestador centralizado
+maximiza el control a costa de concentrar el consumo de tokens; el enjambre
+minimiza la coordinación explícita pero dificulta la depuración; el
+pipeline/DAG ofrece predictibilidad pero limita la flexibilidad ante tareas
+no anticipadas.
+
+\subsubsection{Frameworks existentes}
+
+Múltiples frameworks han emergido para facilitar la construcción de sistemas
+multi-agente. Esta sección revisa los más relevantes para el contexto de esta
+investigación.
+
+\paragraph{AutoGen.} Desarrollado por Microsoft Research \citep{autogen2023wu},
+AutoGen modela la colaboración multi-agente como una \textit{conversación} entre
+agentes. Su abstracción central es el \texttt{GroupChat}, donde múltiples
+agentes interactúan en turnos definidos por un selector automático o por reglas
+explícitas. AutoGen soporta agentes con capacidad de ejecución de código
+integrada y permite la intervención humana en el flujo conversacional. Su
+paradigma conversacional es particularmente adecuado para tareas que requieren
+deliberación iterativa entre agentes con roles distintos.
+
+\paragraph{CrewAI.} CrewAI \citep{crewai2024} adopta una metáfora de
+\textit{equipo de trabajo}: cada agente tiene un rol, un objetivo y un conjunto
+de herramientas. Las tareas se definen con dependencias explícitas y se asignan
+a agentes específicos. CrewAI distingue entre ejecución secuencial (pipeline) y
+jerárquica (con un agente manager que coordina). Su principal contribución es la
+simplicidad de configuración para workflows orientados a roles.
+
+\paragraph{LangGraph.} LangGraph \citep{langgraph2024}, desarrollado por
+LangChain, modela workflows de agentes como grafos de estado donde los nodos
+representan funciones o agentes y las aristas definen transiciones condicionales.
+Su abstracción de \textit{state} permite persistir y restaurar el estado
+completo de una ejecución, habilitando patrones como checkpointing,
+human-in-the-loop y ejecución distribuida. LangGraph es agnóstico al modelo y
+al proveedor de herramientas.
+
+\paragraph{Strands SDK.} AWS Strands Agents \citep{strands2025sdk} implementa
+un patrón denominado \textit{agents-as-tools}: cada sub-agente se encapsula
+como una herramienta invocable por un agente orquestador. Este patrón permite
+componer sistemas multi-agente utilizando la misma interfaz de tool calling que
+se usa para herramientas convencionales, sin requerir abstracciones adicionales
+de orquestación. Strands es el framework utilizado en la implementación de esta
+tesis, por lo que su patrón de composición se detalla en el Capítulo 4.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Característica} & \textbf{AutoGen} & \textbf{CrewAI} & \textbf{LangGraph} & \textbf{Strands} \\
+\midrule
+Paradigma & Conversación & Roles/equipo & Grafo de estado & Agente-herramienta \\
+Orquestación & GroupChat & Secuencial/jerárq. & DAG condicional & Centralizada \\
+Integración MCP & Indirecta & Indirecta & Indirecta & Nativa \\
+Code execution & Integrado & Mediante tools & Mediante nodos & Code interpreter \\
+\bottomrule
+\end{tabular}
+\caption{Comparación de frameworks multi-agente}
+\label{tab:multiagent-frameworks}
+\end{table}
+
+\subsubsection{Patrones de comunicación}
+
+Independientemente del framework utilizado, los sistemas multi-agente emplean
+patrones de comunicación recurrentes:
+
+\paragraph{Agentes como herramientas.} El sub-agente se expone como una
+herramienta callable con un schema de entrada y salida definido. El
+orquestador invoca al sub-agente de la misma forma que invocaría cualquier
+herramienta MCP, y recibe el resultado como texto estructurado. Este es el
+patrón implementado por Strands SDK y utilizado en las configuraciones A3 y A4
+de esta investigación. Su principal ventaja es la composabilidad: los
+sub-agentes se pueden anidar arbitrariamente sin cambiar el protocolo de
+comunicación.
+
+\paragraph{Paso de mensajes.} Los agentes intercambian mensajes estructurados
+a través de un canal compartido o mediante handoffs explícitos. Cada agente
+mantiene su propio historial de conversación y contexto. AutoGen implementa
+este patrón mediante su abstracción de chat grupal, donde los mensajes son
+visibles para todos los participantes del grupo.
+
+\paragraph{Contexto compartido.} Un broker de contexto centralizado mantiene
+un estado compartido al que todos los agentes pueden leer y escribir. Este
+patrón reduce la duplicación de información pero introduce riesgos de
+consistencia cuando múltiples agentes modifican el estado concurrentemente.
+
+\paragraph{Impacto en el consumo de tokens.} La elección del patrón de
+comunicación tiene implicaciones directas en el consumo de tokens. En el patrón
+de agentes como herramientas, cada invocación de sub-agente genera un ciclo
+completo de LLM (prompt del sub-agente + respuesta), multiplicando el consumo
+de tokens por el número de delegaciones. En el paso de mensajes, cada mensaje
+en el historial compartido incrementa el contexto de todos los participantes.
+Estas implicaciones motivan la hipótesis de esta tesis: la ejecución de código
+puede reducir significativamente el consumo de tokens al eliminar ciclos
+intermedios de LLM en cadenas de herramientas.

@@ -276,6 +276,17 @@ INPUT ./chapters/02-revision-literatura/ejecucion-codigo.tex
 INPUT ./chapters/02-revision-literatura/ejecucion-codigo.tex
 INPUT ./chapters/02-revision-literatura/ejecucion-codigo.tex
 INPUT chapters/02-revision-literatura/ejecucion-codigo.tex
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ectt1095.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecrm0600.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr10.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmex10.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT ./chapters/02-revision-literatura/sistemas-multi-agente.tex
 INPUT ./chapters/02-revision-literatura/sistemas-multi-agente.tex
 INPUT ./chapters/02-revision-literatura/sistemas-multi-agente.tex
@@ -291,6 +302,12 @@ INPUT ./chapters/02-revision-literatura/sandboxing.tex
 INPUT ./chapters/02-revision-literatura/sandboxing.tex
 INPUT ./chapters/02-revision-literatura/sandboxing.tex
 INPUT chapters/02-revision-literatura/sandboxing.tex
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 INPUT ./chapters/03-marco-teorico.tex
 INPUT ./chapters/03-marco-teorico.tex
 INPUT ./chapters/03-marco-teorico.tex
@@ -512,6 +529,8 @@ INPUT chapters/apendice/prompts.tex
 INPUT main.aux
 INPUT ./main.out
 INPUT ./main.out
+INPUT /home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1095.600pk
+INPUT /home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0600.600pk
 INPUT /home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1200.600pk
 INPUT /home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1200.600pk
 INPUT /home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1200.600pk
@@ -524,4 +543,6 @@ INPUT /home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1095.6
 INPUT /home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1095.600pk
 INPUT /home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1440.600pk
 INPUT /home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx2074.600pk
+INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
+INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb
 INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb

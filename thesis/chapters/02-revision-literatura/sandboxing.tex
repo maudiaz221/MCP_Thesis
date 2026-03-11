@@ -1,4 +1,163 @@
 \subsection{Sandboxing y Seguridad}
-% TODO: Docker como sandbox: flags de seguridad, restricciones.
-% gVisor, Firecracker, alternativas.
-% Modelo de amenazas para ejecución de código de LLMs.
+
+La Sección 2.2 comparó las plataformas disponibles para ejecutar código
+generado por LLMs. Esta sección complementa esa discusión enfocándose en el
+\textbf{modelo de amenazas} específico de la ejecución de código de IA y las
+estrategias de mitigación implementadas en esta investigación.
+
+\subsubsection{Modelo de amenazas}
+
+El código generado por un LLM es inherentemente no confiable. A diferencia del
+código escrito por desarrolladores humanos ---que pasa por procesos de revisión,
+testing y control de versiones---, el código generado por un modelo puede
+contener errores sutiles producto de alucinaciones, efectos no intencionados de
+prompt injection, o simplemente lógica incorrecta que el modelo no tiene
+capacidad de verificar antes de la ejecución. Esto establece un modelo de
+amenazas con cuatro categorías principales:
+
+\begin{enumerate}
+    \item \textbf{Escape del sandbox}: código que explota vulnerabilidades del
+    entorno de ejecución para obtener acceso al sistema host. En el caso de
+    Docker, esto incluye exploits del kernel compartido, escape mediante
+    \texttt{/proc} o \texttt{/sys}, y abuso de capabilities del contenedor.
+
+    \item \textbf{Exfiltración de datos}: código que utiliza acceso a red para
+    enviar datos sensibles a servidores externos. Un LLM que genera código con
+    llamadas HTTP ocultas podría exfiltrar datos del volumen montado o
+    información del entorno de ejecución.
+
+    \item \textbf{Denegación de servicio}: código que consume recursos del host
+    de manera desproporcionada ---bucles infinitos, asignaciones masivas de
+    memoria, fork bombs--- degradando o interrumpiendo el servicio para otros
+    procesos en la máquina.
+
+    \item \textbf{Acceso al sistema host}: código que intenta acceder al
+    sistema de archivos del host fuera de los volúmenes explícitamente montados,
+    escalar privilegios, o manipular procesos del host a través de interfaces
+    compartidas.
+\end{enumerate}
+
+Es importante notar que estas amenazas no requieren intención maliciosa del
+usuario. Un LLM puede generar código peligroso como efecto secundario de
+instrucciones benignas ---por ejemplo, un modelo que intenta ``optimizar''
+una consulta podría generar código que itera indefinidamente, o un modelo que
+intenta ``explorar'' el sistema podría generar código que accede a rutas
+sensibles.
+
+\subsubsection{Estrategias de mitigación en Docker}
+
+La implementación de esta tesis utiliza Docker como entorno de ejecución con
+una configuración de seguridad que mitiga cada categoría de amenaza
+identificada. Los contenedores se ejecutan con los siguientes flags de
+seguridad:
+
+\begin{lstlisting}[language=bash,caption={Flags de seguridad Docker utilizados en esta investigación}]
+docker run \
+  --network none \
+  --memory 512m \
+  --cpus 1 \
+  --read-only \
+  --cap-drop ALL \
+  --security-opt no-new-privileges \
+  -v ./data:/data:rw
+\end{lstlisting}
+
+Cada flag aborda amenazas específicas:
+
+\begin{itemize}
+    \item \textbf{\texttt{--network none}}: elimina completamente el acceso a
+    red del contenedor, mitigando la exfiltración de datos. El código
+    ejecutado no puede establecer conexiones salientes ni recibir conexiones
+    entrantes.
+
+    \item \textbf{\texttt{--memory 512m}}: establece un límite máximo de
+    memoria de 512 megabytes. Si el proceso excede este límite, el kernel
+    del host termina el contenedor mediante OOM killer, mitigando la
+    denegación de servicio por consumo de memoria.
+
+    \item \textbf{\texttt{--cpus 1}}: limita el contenedor a un núcleo de CPU,
+    previniendo que un proceso intensivo monopolice los recursos de cómputo
+    del host.
+
+    \item \textbf{\texttt{--read-only}}: monta el sistema de archivos raíz del
+    contenedor como solo lectura. El código ejecutado no puede modificar
+    binarios del sistema, instalar software adicional ni alterar la
+    configuración del contenedor. Únicamente el directorio \texttt{/data},
+    montado explícitamente como lectura-escritura, es modificable.
+
+    \item \textbf{\texttt{--cap-drop ALL}}: elimina todas las Linux
+    capabilities del proceso del contenedor. Las capabilities son permisos
+    granulares que el kernel otorga a procesos ---como \texttt{NET\_RAW}
+    (sockets raw), \texttt{SYS\_ADMIN} (operaciones de administración) o
+    \texttt{MKNOD} (creación de dispositivos). Al eliminarlas todas, el
+    proceso ejecuta con el mínimo privilegio posible.
+
+    \item \textbf{\texttt{--security-opt no-new-privileges}}: previene que el
+    proceso o sus hijos adquieran privilegios adicionales mediante mecanismos
+    como \texttt{setuid}, \texttt{setgid} o ejecución de binarios con
+    capabilities de archivo. Esto cierra vectores de escalamiento de
+    privilegios dentro del contenedor.
+\end{itemize}
+
+Adicionalmente, los contenedores son \textbf{efímeros}: se crean para cada
+ejecución de código y se destruyen inmediatamente después. Esto garantiza que
+no existe persistencia de estado entre ejecuciones, eliminando la posibilidad
+de que código malicioso deje artefactos que afecten ejecuciones posteriores.
+
+\subsubsection{Alternativas de aislamiento}
+
+Aunque Docker proporciona un nivel de aislamiento adecuado para esta
+investigación, existen alternativas con garantías de seguridad más fuertes:
+
+\paragraph{gVisor.} Desarrollado por Google \citep{gvisor2024}, gVisor
+implementa un kernel de aplicación en espacio de usuario que intercepta todas
+las llamadas al sistema (syscalls) del contenedor. A diferencia de Docker
+estándar, donde los contenedores comparten el kernel del host y las syscalls se
+ejecutan directamente, gVisor actúa como un proxy que reimplementa un
+subconjunto del kernel Linux en Go. Esto reduce drásticamente la superficie de
+ataque: un exploit de kernel en un contenedor con gVisor afecta únicamente al
+kernel de aplicación de gVisor, no al kernel del host. El trade-off es un
+overhead de rendimiento en operaciones intensivas de syscalls.
+
+\paragraph{Firecracker.} Como se describió en la Sección 2.2, Firecracker
+\citep{e2b2024sandbox} proporciona aislamiento a nivel de microVM, ejecutando
+un kernel independiente para cada sandbox. Esto elimina por completo el vector
+de escape de kernel compartido, ya que cada ejecución opera sobre su propio
+kernel. El costo es mayor consumo de recursos por instancia comparado con
+contenedores.
+
+\paragraph{WebAssembly.} El sandboxing a nivel de instrucción de WebAssembly,
+descrito en la Sección 2.2, ofrece aislamiento por construcción: el código
+ejecuta dentro de un módulo binario que no tiene acceso directo al sistema
+operativo. Sin embargo, el soporte limitado de bibliotecas Python (a través de
+Pyodide) lo hace menos adecuado para escenarios que requieren dependencias
+científicas o de análisis de datos.
+
+El trade-off general entre estas alternativas es claro: \textbf{mayor
+aislamiento implica mayor overhead}, lo que potencialmente impacta la latencia
+medida en los experimentos. La Tabla~\ref{tab:sandbox-comparison} en la Sección
+2.2 cuantifica estas diferencias.
+
+\subsubsection{Implicaciones para la investigación}
+
+La configuración de seguridad tiene implicaciones directas para el diseño
+experimental de esta tesis:
+
+\begin{itemize}
+    \item \textbf{Variable controlada}: las cuatro configuraciones
+    experimentales (A1--A4) utilizan exactamente los mismos flags de seguridad
+    de Docker. Esto asegura que cualquier diferencia observada en latencia o
+    rendimiento se debe al modo de ejecución (tool calling vs.\ código) y no a
+    diferencias en la configuración del sandbox.
+
+    \item \textbf{Componente de la latencia medida}: el overhead de crear un
+    contenedor Docker, ejecutar el código y destruir el contenedor es parte de
+    la latencia total medida en las configuraciones A2 y A4 (ejecución de
+    código). Este overhead es un costo inherente del paradigma de ejecución de
+    código que los resultados deben reflejar de manera transparente.
+
+    \item \textbf{Limitación del timeout}: cada ejecución tiene un timeout
+    configurable (30 segundos por defecto) que actúa como una capa adicional
+    de protección contra denegación de servicio y como una variable controlada
+    del experimento.
+\end{itemize}

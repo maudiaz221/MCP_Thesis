@@ -1,7 +1,160 @@
 \subsection{Ejecución de Código en LLMs}
-% TODO: Patrones de ejecución de código:
-% - Anthropic: code execution with MCP \cite{anthropic2024codeexec}
-% - Cloudflare Workers como sandbox
-% - E2B como plataforma de sandbox
-% - AWS Strands code_interpreter \cite{strands2025tools}
-% Comparar enfoques: Docker vs microVMs vs WebAssembly
+
+La capacidad de los LLMs para generar código ejecutable ha dado lugar a un
+paradigma de interacción fundamentalmente distinto al tool calling
+convencional. En lugar de que el modelo invoque herramientas una por una a
+través de una interfaz estructurada, el modelo genera un programa completo que
+orquesta múltiples operaciones dentro de un entorno de ejecución aislado. Esta
+sección revisa los principales patrones y plataformas que han emergido para
+habilitar la ejecución segura de código generado por LLMs.
+
+\subsubsection{El patrón de Anthropic: herramientas como código}
+
+\citet{anthropic2024codeexec} proponen una reestructuración fundamental en la
+forma en que los agentes interactúan con servidores MCP. En lugar de presentar
+las herramientas como funciones invocables a través del protocolo de tool
+calling, las reorganizan como un \textbf{sistema de archivos navegable} donde
+cada herramienta es un módulo de código con una interfaz tipada:
+
+\begin{lstlisting}[language=Python,caption={Estructura de herramientas como archivos}]
+servers/
+  google-drive/
+    getDocument.ts
+    listFiles.ts
+    index.ts
+  salesforce/
+    updateRecord.ts
+    queryRecords.ts
+    index.ts
+\end{lstlisting}
+
+Cada módulo exporta una función con tipos de entrada y salida explícitos. El
+agente, en lugar de recibir todas las definiciones de herramientas en su
+contexto de manera estática, \textbf{navega el sistema de archivos bajo
+demanda}: lista los servidores disponibles, lee las definiciones de las
+herramientas que necesita para la tarea actual, y genera código que las
+orquesta directamente.
+
+Este patrón invierte el flujo de información. En el tool calling convencional,
+el contexto del modelo funciona como intermediario: cada resultado intermedio
+pasa por la ventana de contexto para ser interpretado y reformulado como
+entrada de la siguiente herramienta. En la ejecución de código, los datos
+fluyen programáticamente entre funciones dentro del entorno de ejecución, y
+únicamente el resultado final regresa al contexto del modelo. Como ilustran
+\citet{anthropic2024codeexec}, una tarea que requiere recuperar un documento de
+Google Drive y actualizar un registro en Salesforce se reduce a un programa de
+pocas líneas donde los datos intermedios nunca pasan por el modelo:
+
+\begin{lstlisting}[language=Python,caption={Orquestación directa mediante código}]
+transcript = gdrive.get_document(document_id="abc123")
+salesforce.update_record(
+    object_type="SalesMeeting",
+    record_id="00Q5f000001abc",
+    data={"Notes": transcript.content}
+)
+\end{lstlisting}
+
+El resultado reportado es una reducción de 150,000 a 2,000 tokens ---un ahorro
+del 98.7\%--- en escenarios donde el agente está conectado a múltiples
+servidores con grandes conjuntos de herramientas \citep{anthropic2024codeexec}.
+
+\subsubsection{AWS Strands: code interpreter como herramienta}
+
+Amazon Web Services adoptó un enfoque complementario a través de su framework
+Strands Agents \citep{strands2025tools}. En lugar de reestructurar la
+arquitectura de los servidores MCP, Strands integra un \textit{code
+interpreter} como una herramienta más dentro del toolkit del agente. El agente
+puede decidir, durante la ejecución de una tarea, si invocar herramientas
+directamente o generar código Python que será ejecutado en un entorno
+administrado por Amazon Bedrock AgentCore.
+
+Este patrón es significativo porque no requiere modificar la infraestructura de
+servidores MCP existente: el code interpreter actúa como una capa intermedia
+que permite al agente escribir código que a su vez invoca herramientas
+convencionales. La decisión de cuándo usar ejecución de código versus llamadas
+directas queda delegada al propio modelo, basándose en el contexto de la tarea.
+
+\subsubsection{E2B: microVMs para ejecución aislada}
+
+E2B \citep{e2b2024sandbox} ofrece una plataforma de código abierto
+especializada en proveer entornos de ejecución seguros para agentes de IA. A
+diferencia de los enfoques basados en contenedores Docker, E2B utiliza
+\textbf{microVMs basadas en Firecracker} ---la misma tecnología desarrollada
+por Amazon para AWS Lambda--- que proporcionan aislamiento a nivel de kernel en
+lugar de compartir el kernel del host.
+
+Las características clave de E2B incluyen:
+
+\begin{itemize}
+    \item \textbf{Inicio rápido}: cada sandbox inicia en menos de 200ms,
+    habilitando la creación de entornos efímeros por tarea.
+    \item \textbf{Aislamiento fuerte}: cada microVM ejecuta su propio
+    microkernel, proporcionando aislamiento superior al de contenedores para
+    código no confiable generado por IA.
+    \item \textbf{Entorno completo}: cada sandbox es un sistema Linux completo
+    con terminal, sistema de archivos, instalación de paquetes y persistencia
+    de sesión de hasta 24 horas.
+    \item \textbf{Agnóstico al modelo}: compatible con OpenAI, Anthropic,
+    Mistral, Llama y modelos personalizados.
+\end{itemize}
+
+E2B representa el extremo del espectro de aislamiento: mientras que Docker
+ofrece aislamiento a nivel de proceso compartiendo el kernel del host, y
+Firecracker ofrece aislamiento a nivel de VM con overhead mínimo, cada
+plataforma presenta un trade-off distinto entre seguridad y rendimiento.
+
+\subsubsection{Cloudflare Workers: WebAssembly como sandbox}
+
+Cloudflare Workers ofrece un enfoque radicalmente diferente mediante el uso de
+\textbf{V8 isolates y WebAssembly} como mecanismo de aislamiento
+\citep{cloudflare2024workers}. En este modelo, el código Python se ejecuta a
+través de Pyodide ---un port de CPython a WebAssembly--- dentro de isolates de
+V8, el mismo motor de JavaScript que utiliza Chrome.
+
+Este enfoque tiene implicaciones relevantes para la ejecución de código de
+agentes:
+
+\begin{itemize}
+    \item El modelo de ejecución WebAssembly proporciona sandboxing inherente:
+    el código Python ejecuta dentro de un módulo WebAssembly aislado del
+    runtime del host.
+    \item Todas las operaciones fuera del cómputo puro deben ser explícitamente
+    importadas a través de bindings del runtime.
+    \item El overhead de inicio se mitiga mediante snapshots de memoria que
+    capturan dependencias pre-cargadas en tiempo de despliegue.
+\end{itemize}
+
+A diferencia de Docker y Firecracker, que operan a nivel de sistema operativo,
+WebAssembly opera a nivel de instrucciones, ofreciendo aislamiento por
+construcción del formato binario mismo.
+
+\subsubsection{Comparación de enfoques}
+
+Los cuatro enfoques revisados comparten el objetivo de habilitar la ejecución
+segura de código generado por LLMs, pero difieren significativamente en su
+arquitectura, nivel de aislamiento y trade-offs:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Característica} & \textbf{Docker} & \textbf{Firecracker} & \textbf{WebAssembly} & \textbf{Strands} \\
+\midrule
+Aislamiento & Proceso & Kernel & Instrucción & Administrado \\
+Inicio & $\sim$1s & $<$200ms & $<$50ms & Variable \\
+Overhead & Medio & Bajo & Mínimo & Opaco \\
+Entorno & Linux completo & Linux completo & Limitado & Administrado \\
+Código abierto & Sí & Sí & Sí & Parcial \\
+\bottomrule
+\end{tabular}
+\caption{Comparación de plataformas de ejecución de código para agentes de IA}
+\label{tab:sandbox-comparison}
+\end{table}
+
+El presente trabajo utiliza Docker como entorno de ejecución por su balance
+entre aislamiento, flexibilidad de entorno (sistema Linux completo con
+bibliotecas arbitrarias) y facilidad de implementación en un contexto de
+investigación. La elección de sandbox no es el foco de la investigación, sino
+un componente de infraestructura controlado para evaluar el paradigma de
+ejecución de código en sí mismo.

@@ -1,4 +1,112 @@
 \subsection{Benchmarks Existentes}
-% TODO: Evaluaciones de tool-use existentes (ToolBench, API-Bank, etc.)
-% Benchmarks de agentes (SWE-Bench, WebArena, etc.)
-% Identificar gap: no hay benchmarks específicos para MCP code exec vs directo.
+
+La evaluación sistemática de las capacidades de los LLMs para utilizar
+herramientas y completar tareas complejas ha motivado el desarrollo de
+múltiples benchmarks especializados. Esta sección revisa los más relevantes,
+organizados en dos categorías: benchmarks de tool-use (que evalúan la capacidad
+de invocar herramientas correctamente) y benchmarks de agentes (que evalúan la
+capacidad de completar tareas end-to-end). La sección concluye identificando el
+vacío que esta investigación busca llenar.
+
+\subsubsection{Benchmarks de tool-use}
+
+Los benchmarks de tool-use evalúan la capacidad de un LLM para seleccionar
+herramientas apropiadas, generar parámetros correctos y encadenar múltiples
+llamadas cuando es necesario.
+
+\paragraph{ToolBench.} \citet{toolbench2023} presentan un benchmark a gran
+escala con más de 16,000 APIs del mundo real organizadas en categorías
+funcionales. ToolBench evalúa no solo la selección de herramientas individuales,
+sino la capacidad del modelo para resolver tareas que requieren múltiples
+llamadas a APIs heterogéneas. Los autores proponen un método de planificación
+basado en árboles de decisión (DFSDT) que mejora significativamente el
+rendimiento en cadenas de herramientas complejas. La principal contribución de
+ToolBench es demostrar que la escala del espacio de herramientas ---cientos o
+miles de APIs disponibles--- es un factor crítico en el rendimiento de los
+modelos.
+
+\paragraph{API-Bank.} \citet{apibank2023} construyen un benchmark para evaluar
+LLMs aumentados con herramientas a través de tres niveles de dificultad: Nivel
+1 evalúa la invocación correcta de una API individual; Nivel 2 requiere
+recuperar la API apropiada de un conjunto amplio; Nivel 3 demanda planificación
+y ejecución de múltiples APIs con dependencias entre ellas. API-Bank
+proporciona un entorno de ejecución donde las llamadas a APIs se ejecutan
+realmente, permitiendo evaluar no solo la generación de parámetros sino la
+corrección funcional de las respuestas.
+
+\paragraph{Berkeley Function Calling Leaderboard (BFCL).} El BFCL
+\citep{bfcl2024} estandariza la evaluación de function calling a través de
+múltiples categorías: llamadas simples, llamadas múltiples, llamadas paralelas,
+selección de funciones relevantes de un conjunto amplio, y detección de
+consultas que no requieren ninguna herramienta. Su contribución principal es la
+\textbf{estandarización}: al proveer un leaderboard público con métricas
+uniformes, permite comparar directamente la capacidad de function calling entre
+modelos de diferentes proveedores bajo condiciones idénticas.
+
+\subsubsection{Benchmarks de agentes}
+
+A diferencia de los benchmarks de tool-use, que evalúan interacciones aisladas
+con herramientas, los benchmarks de agentes evalúan la capacidad de completar
+tareas complejas que requieren múltiples pasos de razonamiento, planificación y
+ejecución.
+
+\paragraph{SWE-Bench.} \citet{swebench2024} presentan un benchmark que evalúa
+la capacidad de agentes para resolver issues reales de repositorios de código
+abierto en GitHub. Cada instancia consiste en una descripción de un bug o
+feature request y el estado del repositorio correspondiente; el agente debe
+producir un patch que resuelva el issue y pase los tests del repositorio. SWE-Bench
+es particularmente relevante porque evalúa una cadena completa de capacidades:
+comprensión de código existente, razonamiento sobre el problema, generación de
+código y validación mediante tests. Los resultados reportados muestran que
+incluso los mejores agentes resuelven menos del 30\% de las instancias,
+evidenciando la dificultad de las tareas de ingeniería de software autónoma.
+
+\paragraph{WebArena.} \citet{webarena2024} construyen un entorno realista de
+navegación web con sitios funcionales (e-commerce, foros, herramientas de
+gestión de contenido) donde los agentes deben completar tareas complejas
+mediante interacciones con la interfaz web. WebArena evalúa la capacidad del
+agente para planificar secuencias de acciones en un entorno dinámico donde el
+estado cambia con cada interacción, un escenario análogo al uso de
+herramientas MCP donde cada llamada puede alterar el estado del sistema.
+
+\paragraph{GAIA.} \citet{gaia2024} proponen un benchmark para evaluar
+asistentes de IA generales en tareas que requieren razonamiento multi-paso,
+uso de herramientas web y manejo de archivos multimodales. Las tareas de GAIA
+están diseñadas para ser fáciles de verificar (las respuestas son factuales y
+unívocas) pero difíciles de resolver, requiriendo que el agente combine
+múltiples capacidades. GAIA es relevante para esta investigación porque sus
+tareas implican frecuentemente cadenas de herramientas ---exactamente el
+escenario donde la ejecución de código puede ofrecer ventajas sobre el tool
+calling convencional.
+
+\subsubsection{El vacío identificado}
+
+Los benchmarks revisados comparten una característica en común: todos evalúan
+\textit{qué} logra el agente (correctitud de la respuesta, resolución del
+issue, completitud de la tarea), pero ninguno evalúa \textit{cómo} el agente
+ejecuta las herramientas. Específicamente, se identifican tres vacíos en la
+literatura:
+
+\begin{enumerate}
+    \item \textbf{Modo de ejecución como variable}: ningún benchmark existente
+    compara el rendimiento de un mismo agente utilizando tool calling
+    convencional versus ejecución de código como modos alternativos de
+    interacción con herramientas.
+
+    \item \textbf{Eficiencia de tokens}: los benchmarks existentes reportan
+    métricas de éxito/fracaso, pero no miden sistemáticamente el consumo de
+    tokens como función del modo de ejecución. Dado que el costo operativo de
+    los agentes es directamente proporcional al consumo de tokens, esta métrica
+    es crítica para la viabilidad de despliegues en producción.
+
+    \item \textbf{Complejidad de herramientas como variable}: no existe un
+    benchmark que varíe sistemáticamente la complejidad del servidor de
+    herramientas (número de herramientas, grado de concatenación requerido) para
+    evaluar cómo escala cada modo de ejecución.
+\end{enumerate}
+
+Esta tesis aborda estos vacíos mediante un diseño experimental factorial $2
+\times 2$ (modo de ejecución $\times$ número de agentes) evaluado sobre
+servidores MCP de complejidad creciente, midiendo simultáneamente correctitud,
+consumo de tokens y latencia. El diseño experimental se detalla en el Capítulo
+3.

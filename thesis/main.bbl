@@ -1,9 +1,16 @@
-\begin{thebibliography}{7}
+\begin{thebibliography}{21}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[{Amazon Web Services}(2025)]{strands2025sdk}
+{Amazon Web Services}.
+\newblock {Strands Agents SDK}: A model-driven approach to building {AI}
+  agents, 2025.
+\newblock URL \url{https://github.com/strands-agents/sdk-python}.
+\newblock Accessed: 2026-03-11.
 
 \bibitem[{Anthropic}(2024{\natexlab{a}})]{anthropic2024codeexec}
 {Anthropic}.
@@ -24,11 +31,48 @@
 \newblock URL \url{https://www.anthropic.com/claude}.
 \newblock Accessed: 2026-03-09.
 
+\bibitem[{AWS Strands Agents}(2025)]{strands2025tools}
+{AWS Strands Agents}.
+\newblock Strands agents tools, 2025.
+\newblock URL \url{https://github.com/strands-agents/tools}.
+\newblock Accessed: 2026-03-09.
+
+\bibitem[{Cloudflare}(2024)]{cloudflare2024workers}
+{Cloudflare}.
+\newblock Python workers: Running python on cloudflare workers, 2024.
+\newblock URL \url{https://blog.cloudflare.com/python-workers}.
+\newblock Accessed: 2026-03-11.
+
+\bibitem[{E2B}(2024)]{e2b2024sandbox}
+{E2B}.
+\newblock E2b: Open-source secure sandboxes for ai agents, 2024.
+\newblock URL \url{https://e2b.dev}.
+\newblock Accessed: 2026-03-11.
+
+\bibitem[{Google}(2024)]{gvisor2024}
+{Google}.
+\newblock {gVisor}: Application kernel for containers, 2024.
+\newblock URL \url{https://gvisor.dev}.
+\newblock Accessed: 2026-03-11.
+
 \bibitem[{Google DeepMind}(2025)]{google2025gemini3}
 {Google DeepMind}.
 \newblock Gemini 3: A new generation of multimodal models, 2025.
 \newblock URL \url{https://deepmind.google/technologies/gemini/}.
 \newblock Accessed: 2026-03-09.
+
+\bibitem[{Gorilla LLM Team}(2024)]{bfcl2024}
+{Gorilla LLM Team}.
+\newblock Berkeley function calling leaderboard, 2024.
+\newblock URL \url{https://gorilla.cs.berkeley.edu/leaderboard.html}.
+\newblock Accessed: 2026-03-11.
+
+\bibitem[Jimenez et~al.(2024)Jimenez, Yang, Wettig, Yao, Pei, Press, and
+  Narasimhan]{swebench2024}
+Carlos~E. Jimenez, John Yang, Alexander Wettig, Shunyu Yao, Kexin Pei, Ofir
+  Press, and Karthik Narasimhan.
+\newblock {SWE-bench}: Can language models resolve real-world {GitHub} issues?
+\newblock \emph{arXiv preprint arXiv:2310.06770}, 2024.
 
 \bibitem[{JSON-RPC Working Group}(2010)]{jsonrpc2010spec}
 {JSON-RPC Working Group}.
@@ -36,16 +80,66 @@
 \newblock URL \url{https://www.jsonrpc.org/specification}.
 \newblock Accessed: 2026-03-10.
 
+\bibitem[{LangChain}(2024)]{langgraph2024}
+{LangChain}.
+\newblock {LangGraph}: Build resilient language agents as graphs, 2024.
+\newblock URL \url{https://github.com/langchain-ai/langgraph}.
+\newblock Accessed: 2026-03-11.
+
+\bibitem[Li et~al.(2023)Li, Song, Yu, Yu, Li, Huang, and Li]{apibank2023}
+Minghao Li, Feifan Song, Bowen Yu, Haiyang Yu, Zhoujun Li, Fei Huang, and
+  Yongbin Li.
+\newblock {API-Bank}: A comprehensive benchmark for tool-augmented {LLMs}.
+\newblock \emph{arXiv preprint arXiv:2304.08244}, 2023.
+
+\bibitem[Mialon et~al.(2024)Mialon, Fourrier, Swift, Wolf, LeCun, and
+  Scialom]{gaia2024}
+Gr{\'e}goire Mialon, Cl{\'e}mentine Fourrier, Craig Swift, Thomas Wolf, Yann
+  LeCun, and Thomas Scialom.
+\newblock {GAIA}: A benchmark for general {AI} assistants.
+\newblock \emph{arXiv preprint arXiv:2311.12983}, 2024.
+
 \bibitem[{Model Context Protocol}(2024)]{mcpspec2024}
 {Model Context Protocol}.
 \newblock Mcp specification, 2024.
 \newblock URL \url{https://modelcontextprotocol.io/}.
 \newblock Accessed: 2026-03-09.
 
+\bibitem[Moura(2024)]{crewai2024}
+Jo{\~a}o Moura.
+\newblock {CrewAI}: Framework for orchestrating role-playing autonomous {AI}
+  agents, 2024.
+\newblock URL \url{https://github.com/crewAIInc/crewAI}.
+\newblock Accessed: 2026-03-11.
+
 \bibitem[{OpenAI}(2025)]{openai2025gpt5}
 {OpenAI}.
 \newblock {GPT-5} technical report, 2025.
 \newblock URL \url{https://openai.com/research/gpt-5}.
 \newblock Accessed: 2026-03-09.
+
+\bibitem[Qin et~al.(2023)Qin, Liang, Ye, Zhu, Yan, Lu, Lin, Cong, Tang, Qian,
+  et~al.]{toolbench2023}
+Yujia Qin, Shihao Liang, Yining Ye, Kunlun Zhu, Lan Yan, Yaxi Lu, Yankai Lin,
+  Xin Cong, Xiangru Tang, Bill Qian, et~al.
+\newblock {ToolLLM}: Facilitating large language models to master 16000+
+  real-world {APIs}.
+\newblock \emph{arXiv preprint arXiv:2307.16789}, 2023.
+
+\bibitem[Wu et~al.(2023)Wu, Bansal, Zhang, Wu, Li, Zhu, Jiang, Zhang, Zhang,
+  Liu, et~al.]{autogen2023wu}
+Qingyun Wu, Gagan Bansal, Jieyu Zhang, Yiran Wu, Beibin Li, Erkang Zhu,
+  Li~Jiang, Xiaoyun Zhang, Shaokun Zhang, Jiale Liu, et~al.
+\newblock {AutoGen}: Enabling next-gen {LLM} applications via multi-agent
+  conversation.
+\newblock \emph{arXiv preprint arXiv:2308.08155}, 2023.
+
+\bibitem[Zhou et~al.(2024)Zhou, Xu, Zhu, Zhou, Lo, Sridhar, Cheng, Bisk, Fried,
+  Alon, et~al.]{webarena2024}
+Shuyan Zhou, Frank~F. Xu, Hao Zhu, Xuhui Zhou, Robert Lo, Abishek Sridhar,
+  Xianyi Cheng, Yonatan Bisk, Daniel Fried, Uri Alon, et~al.
+\newblock {WebArena}: A realistic web environment for building autonomous
+  agents.
+\newblock \emph{arXiv preprint arXiv:2307.13854}, 2024.
 
 \end{thebibliography}
