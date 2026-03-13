@@ -1,0 +1,343 @@
+% Evaluación Comparativa de Ejecución de Código vs Llamadas Directas
+% en Sistemas Agénticos Basados en MCP
+% LNCS format - Springer
+%
+\documentclass[runningheads]{llncs}
+%
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\renewcommand\UrlFont{\color{blue}\rmfamily}
+\urlstyle{rm}
+%
+% Listings config for Python code
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray}
+}
+%
+\begin{document}
+%
+\title{Evaluaci\'on Comparativa de Ejecuci\'on de C\'odigo vs Llamadas Directas en Sistemas Ag\'enticos Basados en MCP}
+%
+\titlerunning{Ejecuci\'on de C\'odigo vs Llamadas Directas en MCP}
+%
+% TODO: Fill in author information
+\author{Autor Uno\inst{1}}
+%
+\authorrunning{A. Uno}
+%
+% TODO: Fill in institution
+\institute{Universidad, Ciudad, Pa\'is\\
+\email{autor@universidad.edu}}
+%
+\maketitle
+%
+% ============================================================================
+% RESUMEN
+% ============================================================================
+\begin{abstract}
+% TODO: Escribir después de completar las secciones técnicas (~250 palabras)
+% Estructura: contexto → problema → método → resultados clave → conclusión
+Los sistemas agénticos basados en modelos de lenguaje grande (LLMs) utilizan
+el Model Context Protocol (MCP) para acceder a herramientas externas. Existen
+dos paradigmas de ejecución: llamadas directas a herramientas MCP y generación
+de código ejecutado en sandbox. Este trabajo presenta una evaluación comparativa
+sistemática de ambos enfoques mediante un diseño factorial 2$\times$2 que combina
+arquitectura (agente único vs multi-agente) con modo de ejecución (MCP directo
+vs ejecución de código), evaluado sobre tres tipos de tareas de complejidad
+creciente utilizando ocho servidores MCP. Se miden tokens consumidos, latencia,
+precisión y tasa de éxito. Los resultados muestran\ldots
+% TODO: Completar con resultados reales
+
+\keywords{MCP \and ejecuci\'on de c\'odigo \and tool calling \and sistemas multi-agente \and eficiencia de tokens}
+\end{abstract}
+%
+% ============================================================================
+% 1. INTRODUCCIÓN (Write 3rd)
+% Maps to thesis: Chapter 1 (Contexto, Planteamiento, Motivación, Objetivos)
+% ============================================================================
+\section{Introducci\'on}
+\label{sec:intro}
+
+% 1.1 Contexto: LLMs, agentes, MCP como estándar emergente
+% TODO: Párrafo sobre auge de LLMs y sistemas agénticos
+% TODO: Párrafo sobre MCP como protocolo estándar para tool use
+
+% 1.2 Problema: dos paradigmas de ejecución, trade-offs desconocidos
+% TODO: Párrafo describiendo MCP directo vs code execution
+% TODO: Párrafo sobre la falta de evaluaciones comparativas
+
+% 1.3 Motivación: costos, latencia, necesidad de guías
+% TODO: Párrafo sobre implicaciones prácticas (costos de tokens, latencia)
+
+% 1.4 Contribuciones
+% TODO: Lista de contribuciones:
+% - Framework experimental (OrchAIstra)
+% - Evaluación sistemática 2×2 × 3 task types
+% - Análisis cuantitativo de métricas
+% - Guías para selección de modo de ejecución
+
+% 1.5 Estructura del artículo
+% TODO: Párrafo describiendo organización de secciones
+
+%
+% ============================================================================
+% 2. ANTECEDENTES Y TRABAJO RELACIONADO (Write 2nd)
+% Maps to thesis: Chapter 2 (Revisión de Literatura) + Chapter 3 (Marco Teórico)
+% ============================================================================
+\section{Antecedentes y Trabajo Relacionado}
+\label{sec:background}
+
+\subsection{Model Context Protocol (MCP)}
+\label{sec:mcp}
+% TODO: Origen y especificación del protocolo MCP (Anthropic, Nov 2024)
+% TODO: Arquitectura cliente-servidor, transporte stdio/SSE
+% TODO: Ciclo de vida: discovery → invocation → response
+% TODO: Adopción: Claude Desktop, AWS Strands, editores de código
+
+\subsection{Ejecuci\'on de C\'odigo en Sistemas Ag\'enticos}
+\label{sec:code-exec}
+% TODO: Patrón de code execution (Anthropic engineering blog)
+% TODO: Sandboxing: Docker, E2B, Cloudflare Workers
+% TODO: Comparación con tool calling directo
+% TODO: Strands code_interpreter como referencia
+
+\subsection{Arquitecturas Multi-Agente}
+\label{sec:multi-agent}
+% TODO: Topologías: orquestador, enjambre, pipeline
+% TODO: Frameworks: AutoGen, CrewAI, Strands
+% TODO: Delegación de tareas y coordinación
+
+\subsection{Trabajo Relacionado}
+\label{sec:related}
+% TODO: Benchmarks de tool-use existentes
+% TODO: Evaluaciones de eficiencia de tokens
+% TODO: Comparaciones de modos de ejecución (si existen)
+% TODO: Diferenciación de nuestra contribución
+
+%
+% ============================================================================
+% 3. DISEÑO EXPERIMENTAL (Write 1st - most concrete)
+% Maps to thesis: Chapter 4 (Diseño Experimental) + Chapter 5 (Metodología)
+% ============================================================================
+\section{Dise\~no Experimental}
+\label{sec:design}
+
+\subsection{Matriz Factorial}
+\label{sec:matrix}
+% TODO: Tabla 2×2 (arquitectura × modo de ejecución)
+% A1: Agente único + MCP directo
+% A2: Agente único + Ejecución de código
+% A3: Multi-agente + MCP directo
+% A4: Multi-agente + Ejecución de código
+
+% Placeholder for the factorial table
+% \begin{table}[h]
+% \caption{Matriz factorial 2$\times$2 de configuraciones experimentales.}\label{tab:matrix}
+% \centering
+% \begin{tabular}{lcc}
+% \toprule
+%  & MCP Directo & Ejecución de Código \\
+% \midrule
+% Agente Único & A1 & A2 \\
+% Multi-Agente & A3 & A4 \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+
+\subsection{Suite de Tareas}
+\label{sec:tasks}
+% TODO: Tres tipos de tareas con complejidad creciente
+% T1: Tarea simple (1 herramienta) - morse, cocktails
+% T2: Tarea encadenada (pipeline secuencial) - nutrition, alphavantage, nasa
+% T3: Tarea compleja (30+ herramientas) - devtoolkit, lastfm
+
+% TODO: Tabla con tipos de tarea, descripción, servidores representativos
+
+\subsection{Servidores MCP}
+\label{sec:servers}
+% TODO: Descripción de los 8 servidores
+% TODO: Tabla: nombre, #herramientas, tipo de tarea, API externa
+% TODO: Explicar implementación dual (MCP server + Python tools)
+
+\subsection{Framework: OrchAIstra}
+\label{sec:framework}
+% TODO: Arquitectura del framework de evaluación
+% TODO: Diagrama de componentes (AgentFactory, DockerSandbox, MetricsCollector)
+% TODO: Flujo de ejecución de un experimento
+% TODO: Sistema de evaluación por LLM (grading)
+
+\subsection{M\'etricas}
+\label{sec:metrics}
+% TODO: Definición formal de cada métrica
+% - Tokens: input, output, total
+% - Latencia: total_latency_ms
+% - Precisión: LLM-graded score (0-100)
+% - Tool calls: count, success_rate
+% - Failure modes: categorización de errores
+
+\subsection{Hip\'otesis}
+\label{sec:hypotheses}
+% TODO: Hipótesis formales
+% H1: Code execution reduce tokens para T2 y T3
+% H2: MCP directo tiene menor latencia para T1
+% H3: Precisión equivalente entre modos
+% H4: Existe punto de cruce en número de herramientas
+
+\subsection{Variables de Control}
+\label{sec:controls}
+% TODO: Modelo LLM fijo, temperatura, número de repeticiones
+% TODO: Configuración de Docker (memory, CPU, network)
+
+%
+% ============================================================================
+% 4. RESULTADOS (Write after experiments)
+% Maps to thesis: Chapter 6 (Resultados)
+% ============================================================================
+\section{Resultados}
+\label{sec:results}
+
+\subsection{Resultados por Arquitectura}
+\label{sec:results-arch}
+% TODO: Tablas comparativas A1-A4 para cada tipo de tarea
+% TODO: Métricas agregadas por configuración
+
+\subsection{An\'alisis de Tokens}
+\label{sec:results-tokens}
+% TODO: Gráficas de consumo de tokens por configuración y tarea
+% TODO: Desglose input vs output tokens
+% TODO: Comparación MCP directo vs code execution
+
+\subsection{An\'alisis de Latencia}
+\label{sec:results-latency}
+% TODO: Tiempos de ejecución por configuración
+% TODO: Overhead de Docker en code execution
+% TODO: Latencia per-tool vs end-to-end
+
+\subsection{An\'alisis de Precisi\'on}
+\label{sec:results-precision}
+% TODO: Tasas de éxito por configuración y tarea
+% TODO: Distribución de scores del LLM grader
+% TODO: Análisis de modos de fallo
+
+\subsection{An\'alisis Estad\'istico}
+\label{sec:results-stats}
+% TODO: Tests de significancia (t-test, ANOVA)
+% TODO: Intervalos de confianza
+% TODO: Tamaño del efecto
+
+%
+% ============================================================================
+% 5. DISCUSIÓN (Write after results)
+% Maps to thesis: Chapter 7 (Modelo de Decisión) + Chapter 8 (Discusión)
+% ============================================================================
+\section{Discusi\'on}
+\label{sec:discussion}
+
+\subsection{Interpretaci\'on de Resultados}
+\label{sec:interpretation}
+% TODO: Relación con hipótesis H1-H4
+% TODO: Patrones observados
+
+\subsection{An\'alisis de Modos de Fallo}
+\label{sec:failures}
+% TODO: Cuándo falla cada enfoque y por qué
+% TODO: Categorización de errores
+
+\subsection{Implicaciones Pr\'acticas}
+\label{sec:implications}
+% TODO: Guías para desarrolladores
+% TODO: Cuándo usar MCP directo vs code execution
+% TODO: Consideraciones de costo y rendimiento
+
+\subsection{Limitaciones}
+\label{sec:limitations}
+% TODO: Limitaciones del estudio
+% TODO: Amenazas a la validez
+
+%
+% ============================================================================
+% 6. CONCLUSIONES (Write last)
+% Maps to thesis: Chapter 9 (Conclusiones)
+% ============================================================================
+\section{Conclusiones}
+\label{sec:conclusions}
+% TODO: Resumen de hallazgos principales
+% TODO: Contribuciones del trabajo
+% TODO: Trabajo futuro: más modelos, más tareas, optimización de prompts
+
+%
+% ============================================================================
+% ACKNOWLEDGMENTS & DISCLOSURES
+% ============================================================================
+\begin{credits}
+\subsubsection{\ackname}
+% TODO: Agradecimientos
+
+\subsubsection{\discintname}
+Los autores declaran no tener conflictos de inter\'es relevantes al contenido
+de este art\'iculo.
+\end{credits}
+%
+% ============================================================================
+% REFERENCES
+% ============================================================================
+%
+\bibliographystyle{splncs04}
+% \bibliography{references}
+%
+% Inline bibliography until .bib file is ready
+\begin{thebibliography}{20}
+
+% MCP Protocol
+\bibitem{mcp_spec}
+Anthropic: Model Context Protocol Specification.
+\url{https://modelcontextprotocol.io/} (2024)
+
+% MCP Python SDK
+\bibitem{mcp_sdk}
+Anthropic: MCP Python SDK.
+\url{https://github.com/modelcontextprotocol/python-sdk} (2024)
+
+% Anthropic code execution
+\bibitem{anthropic_code_exec}
+Anthropic: Code execution with MCP. Anthropic Engineering Blog (2025)
+
+% AWS Strands
+\bibitem{strands}
+AWS: Strands Agents -- Code Interpreter Tool.
+\url{https://github.com/strands-agents/tools} (2025)
+
+% Docker security
+\bibitem{docker_security}
+Docker Inc.: Docker Engine Security.
+\url{https://docs.docker.com/engine/security/} (2024)
+
+% E2B
+\bibitem{e2b}
+E2B: Cloud Runtime for AI Agents.
+\url{https://github.com/e2b-dev/e2b} (2024)
+
+% TODO: Add more references as sections are written
+% - LLM agent frameworks (AutoGen, CrewAI)
+% - Tool-use benchmarks
+% - Token efficiency studies
+% - Multi-agent architectures
+
+\end{thebibliography}
+%
+\end{document}

@@ -55,13 +55,3 @@ Existen 3 tipos de tasks:
 
 - vamos a correr todos los tasks con cada tipo de agente, con diferentes numero de servidores a disposicion
 - Al final de la ejecucion un LLM va a calificar que tan bien le fue con respecto a los markdowns de tasks
-
-## Posible mejora (modelo predictivo de arquitectura de agente)
-
-- Modelo que dado X variables del task por hacer predice el tipo de arquitectura que se deberia usar.
-
-Posibles variables: (discutimos con Octavio) 
-
-- Complejidad del task 1-10
-- Numero de servidores a la mano
-- Tiempo disponible (latencia)
