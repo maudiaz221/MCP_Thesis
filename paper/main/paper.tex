@@ -1,0 +1,324 @@
+% Evaluación Comparativa de Ejecución de Código vs Llamadas Directas
+% en Sistemas Agénticos Basados en MCP
+% LNCS format - Springer
+%
+\documentclass[runningheads]{llncs}
+%
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\renewcommand\UrlFont{\color{blue}\rmfamily}
+\urlstyle{rm}
+%
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray}
+}
+%
+\begin{document}
+%
+\title{Evaluaci\'on Comparativa de Ejecuci\'on de C\'odigo vs Llamadas Directas en Sistemas Ag\'enticos Basados en MCP}
+%
+\titlerunning{Ejecuci\'on de C\'odigo vs Llamadas Directas en MCP}
+%
+\author{Mauricio D\'iaz Villarreal\inst{1} \and
+Jorge Esteban Ram\'irez Shashida\inst{1}}
+%
+\authorrunning{M. D\'iaz Villarreal, J.E. Ram\'irez Shashida}
+%
+\institute{Instituto Tecnol\'ogico Aut\'onomo de M\'exico (ITAM),
+R\'io Hondo No.~1, Progreso Tizap\'an, 01080 Ciudad de M\'exico, M\'exico\\
+\email{mauricio.diaz.villarreal@itam.mx}}
+%
+\maketitle
+%
+% ============================================================================
+% RESUMEN
+% ============================================================================
+\begin{abstract}
+Los sistemas ag\'enticos basados en modelos de lenguaje grande (LLMs) utilizan
+el Model Context Protocol (MCP) para acceder a herramientas externas. Existen
+dos paradigmas de ejecuci\'on: llamadas directas a herramientas MCP, donde el
+modelo invoca herramientas una por una acumulando resultados en su contexto, y
+ejecuci\'on de c\'odigo, donde el modelo genera programas que orquestan m\'ultiples
+llamadas en un entorno aislado retornando \'unicamente el resultado final.
+Este trabajo presenta una evaluaci\'on comparativa sistem\'atica de ambos enfoques
+mediante un dise\~no factorial $2 \times 2$ que combina arquitectura (agente
+\'unico vs multi-agente) con modo de ejecuci\'on (MCP directo vs ejecuci\'on de
+c\'odigo), evaluado sobre tres tipos de tareas de complejidad creciente ---tarea
+simple, encadenada y compleja--- utilizando ocho servidores MCP. Se implementa
+OrchAIstra, un framework de evaluaci\'on que mide tokens consumidos, latencia,
+precisi\'on y tasa de \'exito mediante calificaci\'on automatizada por LLM.
+Los resultados buscan identificar bajo qu\'e condiciones cada paradigma es
+\'optimo, proporcionando gu\'ias cuantitativas para desarrolladores de sistemas
+ag\'enticos.
+
+\keywords{MCP \and ejecuci\'on de c\'odigo \and tool calling \and sistemas multi-agente \and eficiencia de tokens}
+\end{abstract}
+%
+% ============================================================================
+% 1. INTRODUCCI\'ON
+% ============================================================================
+\section{Introducci\'on}
+\label{sec:intro}
+
+Los modelos de lenguaje de gran escala (LLMs) han alcanzado un nivel de
+capacidad sin precedentes en los \'ultimos a\~nos. Modelos como GPT-5~\cite{ref_gpt5},
+Claude Opus 4.6~\cite{ref_opus} y Gemini 3~\cite{ref_gemini3} demuestran
+desempe\~no competitivo en razonamiento matem\'atico, generaci\'on de c\'odigo,
+an\'alisis de texto y resoluci\'on de problemas complejos. Sin embargo, conforme
+las capacidades fundamentales se consolidan, la frontera de investigaci\'on se
+ha desplazado hacia la \textbf{gesti\'on eficiente del contexto}: la ventana de
+contexto, el espacio limitado de tokens que un modelo puede procesar en una
+sola interacci\'on se ha convertido en el enfoque para el mejoramiento de estos modelos. Cada token consumido representa un costo econ\'omico
+directo y una porci\'on del
+espacio disponible para informaci\'on relevante.
+
+Este problema se intensifica con la adopci\'on de \textbf{sistemas ag\'enticos},
+en los cuales un LLM interact\'ua con herramientas externas como las bases de datos,
+APIs, sistemas de archivos, e incluso otros agentes  para completar tareas del mundo real. El mecanismo
+dominante para esta interacci\'on es el \textit{tool calling}: el modelo recibe
+las definiciones de las herramientas disponibles dentro de su contexto,
+selecciona cu\'al invocar, genera los par\'ametros apropiados, recibe el resultado
+y contin\'ua con su tarea a resolver. Este proceso consume tokens en cada paso: las
+descripciones de herramientas, los par\'ametros serializados, las respuestas
+intermedias y el historial acumulado compiten por espacio dentro de la ventana
+de contexto.
+
+En 2024, Anthropic introdujo el \textbf{Model Context Protocol} (MCP)~\cite{ref_mcp},
+un protocolo abierto que estandariza la comunicaci\'on entre LLMs y servidores de
+herramientas mediante una protocolo cliente-servidor basada en JSON-RPC. MCP es el protocolo estandar
+que permite a los modelos descubrir e invocar herramientas de manera uniforme,
+independientemente del tipo de implementaci\'on, y ha sido adoptado
+r\'apidamente por la industria como est\'andar de facto.
+
+Dentro del ecosistema MCP han emergido dos paradigmas para la ejecuci\'on de
+tareas que requieren herramientas:
+
+\begin{enumerate}
+    \item \textbf{Llamadas directas a MCP}: el modelo invoca herramientas
+    individuales a trav\'es del protocolo, una por una, acumulando resultados en
+    su contexto a lo largo de m\'ultiples turnos de interacci\'on.
+
+    \item \textbf{Ejecuci\'on de c\'odigo}: el modelo genera un programa que
+    orquesta m\'ultiples llamadas a herramientas dentro de un entorno de
+    ejecuci\'on aislado (\textit{sandbox}), retornando \'unicamente el resultado
+    final al contexto del modelo~\cite{ref_codeexec}.
+\end{enumerate}
+
+Ambos esquemas resuelven el mismo problema funcional ---conectar un LLM con
+herramientas externas--- pero difieren radicalmente en c\'omo utilizan la
+ventana de contexto. Las llamadas directas cargan todas las definiciones de
+herramientas y resultados intermedios en el contexto; la ejecuci\'on de c\'odigo
+delega la orquestaci\'on a un programa externo, reduciendo potencialmente el
+n\'umero de tokens consumidos a cambio de un overhead de generaci\'on de c\'odigo
+y ejecuci\'on en sandbox.
+
+\subsection{Planteamiento del problema}
+\label{sec:problem}
+
+El mecanismo convencional de tool calling sobre MCP presenta dos limitaciones
+estructurales que comprometen su escalabilidad.
+
+La primera es la \textbf{carga est\'atica de definiciones de herramientas}: todas
+las definiciones disponibles ---nombres, descripciones, par\'ametros y schemas---
+deben cargarse en la ventana de contexto \textit{antes} de que el modelo procese
+el prompt del usuario. En escenarios con decenas o cientos de herramientas, el
+modelo procesa miles de tokens de definiciones antes de leer la tarea, la
+mayor\'ia de las cuales no ser\'an utilizadas~\cite{ref_codeexec}.
+
+La segunda es el \textbf{tr\'ansito obligatorio de resultados intermedios por el
+contexto}: en secuencias donde el resultado de una herramienta alimenta la
+entrada de la siguiente, cada resultado intermedio pasa por la ventana de
+contexto para ser interpretado y reformulado. Los mismos datos se procesan
+m\'ultiples veces, y en el caso de datos extensos, este patr\'on puede exceder
+los l\'imites de contexto.
+
+Estos dos problemas comparten una ra\'iz com\'un: el \textbf{acoplamiento entre
+la orquestaci\'on de herramientas y la ventana de contexto del modelo}. En el
+paradigma convencional, el contexto cumple una doble funci\'on: es
+simult\'aneamente el espacio de razonamiento del LLM y el canal de comunicaci\'on
+entre herramientas.
+
+Anthropic propone como alternativa la ejecuci\'on de c\'odigo, reportando
+reducciones de hasta 98.7\% en consumo de tokens (de 150,000 a 2,000) en
+escenarios con grandes conjuntos de herramientas~\cite{ref_codeexec}. Sin
+embargo, esta cifra proviene de un caso de uso espec\'ifico y no constituye una
+evaluaci\'on sistem\'atica a trav\'es de diferentes tipos de tareas y arquitecturas
+ag\'enticas.
+
+La pregunta central de esta investigaci\'on es: \textbf{?`bajo qu\'e condiciones la
+ejecuci\'on de c\'odigo a trav\'es de MCP supera a las llamadas directas en
+t\'erminos de consumo de tokens, latencia y precisi\'on en sistemas ag\'enticos?}
+
+\subsection{Motivaci\'on}
+\label{sec:motivation}
+
+La resoluci\'on de este problema tiene consecuencias tangibles en m\'ultiples
+dimensiones. Desde la perspectiva econ\'omica, los proveedores de modelos
+facturan por mill\'on de tokens: la diferencia entre una arquitectura que consume
+150,000 tokens y una que consume 2,000 por interacci\'on representa \'ordenes de
+magnitud en costos operativos a escala. Desde la perspectiva del desarrollador,
+el ecosistema carece de criterios emp\'iricos para elegir entre ambos paradigmas;
+la decisi\'on arquitect\'onica se basa actualmente en intuici\'on o en las
+recomendaciones de un \'unico art\'iculo t\'ecnico~\cite{ref_codeexec}. Desde la
+perspectiva acad\'emica, si bien existen benchmarks de tool-use y evaluaciones de
+sistemas multi-agente, ninguno se enfoca en el eje de \textit{c\'omo} se ejecutan
+las herramientas y su impacto en eficiencia. Esta ausencia de evidencia emp\'irica
+es el vac\'io que este trabajo busca llenar.
+
+\subsection{Contribuciones}
+\label{sec:contributions}
+
+Este trabajo presenta las siguientes contribuciones:
+
+\begin{enumerate}
+    \item Un \textbf{dise\~no experimental factorial} $2 \times 2$ que combina
+    arquitectura (agente \'unico vs multi-agente) con modo de ejecuci\'on (MCP
+    directo vs ejecuci\'on de c\'odigo), evaluado sobre tres tipos de tareas de
+    complejidad creciente.
+
+    \item \textbf{OrchAIstra}, un framework de evaluaci\'on de c\'odigo abierto
+    que implementa cuatro tipos de agentes, ocho servidores MCP duales
+    (versi\'on directa y versi\'on de ejecuci\'on de c\'odigo), y un sistema de
+    calificaci\'on automatizada por LLM.
+
+    \item Un \textbf{an\'alisis cuantitativo} de consumo de tokens, latencia,
+    precisi\'on y modos de fallo a trav\'es de las doce combinaciones
+    experimentales.
+
+    \item \textbf{Gu\'ias basadas en evidencia} para la selecci\'on del modo de
+    ejecuci\'on \'optimo seg\'un las caracter\'isticas de la tarea.
+\end{enumerate}
+
+\subsection{Estructura del art\'iculo}
+\label{sec:structure}
+
+El resto del art\'iculo se organiza como sigue. La Secci\'on~\ref{sec:background}
+presenta los antecedentes sobre MCP, ejecuci\'on de c\'odigo y arquitecturas
+multi-agente. La Secci\'on~\ref{sec:design} detalla el dise\~no experimental,
+incluyendo la matriz factorial, los servidores MCP y las m\'etricas. La
+Secci\'on~\ref{sec:results} reporta los resultados experimentales. La
+Secci\'on~\ref{sec:discussion} discute las implicaciones y limitaciones.
+Finalmente, la Secci\'on~\ref{sec:conclusions} presenta las conclusiones y
+trabajo futuro.
+
+%
+% ============================================================================
+% 2. ANTECEDENTES Y TRABAJO RELACIONADO (placeholder)
+% ============================================================================
+\section{Antecedentes y Trabajo Relacionado}
+\label{sec:background}
+
+% TODO: Write 2nd - See section_guide.md for detailed content plan
+
+%
+% ============================================================================
+% 3. DISE\~NO EXPERIMENTAL (placeholder)
+% ============================================================================
+\section{Dise\~no Experimental}
+\label{sec:design}
+
+% TODO: Write 1st (most concrete) - See section_guide.md for detailed content plan
+
+%
+% ============================================================================
+% 4. RESULTADOS (placeholder)
+% ============================================================================
+\section{Resultados}
+\label{sec:results}
+
+% TODO: After running experiments
+
+%
+% ============================================================================
+% 5. DISCUSI\'ON (placeholder)
+% ============================================================================
+\section{Discusi\'on}
+\label{sec:discussion}
+
+% TODO: After results
+
+%
+% ============================================================================
+% 6. CONCLUSIONES (placeholder)
+% ============================================================================
+\section{Conclusiones}
+\label{sec:conclusions}
+
+% TODO: Write last
+
+%
+% ============================================================================
+% CREDITS
+% ============================================================================
+\begin{credits}
+\subsubsection{\ackname}
+Los autores agradecen al Instituto Tecnol\'ogico Aut\'onomo de M\'exico (ITAM)
+por el apoyo brindado para la realizaci\'on de este trabajo.
+
+\subsubsection{\discintname}
+Los autores declaran no tener conflictos de inter\'es relevantes al contenido
+de este art\'iculo.
+\end{credits}
+%
+% ============================================================================
+% REFERENCES
+% ============================================================================
+\bibliographystyle{splncs04}
+%
+\begin{thebibliography}{20}
+
+\bibitem{ref_gpt5}
+OpenAI: GPT-5 Technical Report (2025)
+
+\bibitem{ref_opus}
+Anthropic: Claude Opus 4.6 Model Card (2025)
+
+\bibitem{ref_gemini3}
+Google DeepMind: Gemini 3 Technical Report (2025)
+
+\bibitem{ref_mcp}
+Anthropic: Model Context Protocol Specification.
+\url{https://modelcontextprotocol.io/} (2024)
+
+\bibitem{ref_mcpspec}
+Anthropic: MCP Python SDK.
+\url{https://github.com/modelcontextprotocol/python-sdk} (2024)
+
+\bibitem{ref_codeexec}
+Anthropic: Code execution with MCP. Anthropic Engineering Blog (2025)
+
+\bibitem{ref_strands}
+AWS: Strands Agents -- Code Interpreter Tool.
+\url{https://github.com/strands-agents/tools} (2025)
+
+\bibitem{ref_docker}
+Docker Inc.: Docker Engine Security.
+\url{https://docs.docker.com/engine/security/} (2024)
+
+\bibitem{ref_e2b}
+E2B: Cloud Runtime for AI Agents.
+\url{https://github.com/e2b-dev/e2b} (2024)
+
+% TODO: Add as sections are written:
+% - AutoGen, CrewAI (multi-agent frameworks)
+% - Tool-use benchmarks (BFCL, API-Bank, ToolBench)
+% - Token efficiency studies
+
+\end{thebibliography}
+%
+\end{document}
