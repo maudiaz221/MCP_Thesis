@@ -105,11 +105,11 @@ que permite a los modelos descubrir e invocar herramientas de manera uniforme,
 independientemente del tipo de implementaci\'on, y ha sido adoptado
 r\'apidamente por la industria como est\'andar de facto.
 
-Dentro del ecosistema MCP han emergido dos paradigmas para la ejecuci\'on de
+Dentro del ecosistema MCP se va a hacer enfoque en dos metodos para la ejecuci\'on de
 tareas que requieren herramientas:
 
 \begin{enumerate}
-    \item \textbf{Llamadas directas a MCP}: el modelo invoca herramientas
+    \item \textbf{Llamadas directas a MCP}: El modelo invoca herramientas
     individuales a trav\'es del protocolo, una por una, acumulando resultados en
     su contexto a lo largo de m\'ultiples turnos de interacci\'on.
 
@@ -119,8 +119,7 @@ tareas que requieren herramientas:
     final al contexto del modelo~\cite{ref_codeexec}.
 \end{enumerate}
 
-Ambos esquemas resuelven el mismo problema funcional ---conectar un LLM con
-herramientas externas--- pero difieren radicalmente en c\'omo utilizan la
+Ambos esquemas resuelven el mismo problema funcional tener un LLM conectado con herramientas externas de manera estandarizada pero difieren radicalmente en c\'omo utilizan la
 ventana de contexto. Las llamadas directas cargan todas las definiciones de
 herramientas y resultados intermedios en el contexto; la ejecuci\'on de c\'odigo
 delega la orquestaci\'on a un programa externo, reduciendo potencialmente el

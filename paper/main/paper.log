@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.3.9)  13 MAR 2026 14:44
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.3.9)  13 MAR 2026 15:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -553,25 +553,25 @@ File: t1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 ) [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-LaTeX Info: Redefining \. on input line 151.
-LaTeX Info: Redefining \% on input line 151.
+LaTeX Info: Redefining \. on input line 148.
+LaTeX Info: Redefining \% on input line 148.
  [2]
-LaTeX Info: Redefining \. on input line 219.
-LaTeX Info: Redefining \% on input line 219.
+LaTeX Info: Redefining \. on input line 204.
+LaTeX Info: Redefining \% on input line 204.
  [3]
-Underfull \hbox (badness 10000) in paragraph at lines 300--302
+Underfull \hbox (badness 10000) in paragraph at lines 298--300
 []\T1/cmr/m/n/9 Anthropic: MCP Python SDK. []$https : / / github . com / modelc
 ontextprotocol /
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 307--309
+Underfull \hbox (badness 10000) in paragraph at lines 305--307
 []\T1/cmr/m/n/9 AWS: Strands Agents -- Co-de In-ter-pre-ter Tool. []$https : / 
 / github . com /
  []
 
-LaTeX Info: Redefining \. on input line 325.
-LaTeX Info: Redefining \% on input line 325.
+LaTeX Info: Redefining \. on input line 323.
+LaTeX Info: Redefining \% on input line 323.
 [4] (./paper.aux
 LaTeX Info: Redefining \. on input line 14.
 LaTeX Info: Redefining \% on input line 14.
@@ -590,7 +590,7 @@ Here is how much of TeX's memory you used:
  34962 multiletter control sequences out of 15000+600000
  568297 words of font info for 57 fonts, out of 8000000 for 9000
  40 hyphenation exceptions out of 8191
- 75i,7n,79p,652b,459s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,6n,79p,652b,543s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1000.60
 0pk> </home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1000.
 600pk> </home/vscode/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx120
@@ -605,7 +605,7 @@ cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7
 .pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></u
 sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/sha
 re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb>
-Output written on paper.pdf (4 pages, 142916 bytes).
+Output written on paper.pdf (4 pages, 142974 bytes).
 PDF statistics:
  467 PDF objects out of 1000 (max. 8388607)
  130 compressed objects within 2 object streams
