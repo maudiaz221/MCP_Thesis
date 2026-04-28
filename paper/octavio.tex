@@ -100,13 +100,13 @@ However, before executing a workflow, an agent must load tool definitions into i
 
 
 
-%The rise of LLMs has given birth to a new research area on agentic AI systems (see~\cite{raheem2025agentic}, \cite{dwivedi2026agentic}, and \cite{acharya2025agentic}), which can automatically compose and orchestrate web services (commonly referred to as tools in this context) to execute complex enterprise workflows.
+The rise of LLMs has given birth to a new research area on agentic AI systems (see~\cite{raheem2025agentic}, \cite{dwivedi2026agentic}, and \cite{acharya2025agentic}), which can automatically compose and orchestrate web services (commonly referred to as tools in this context) to execute complex enterprise workflows.
 
-%One of the most influential paradigms for agents that interact with external tools is ReAct~\cite{yao2022react}, in which agents iteratively alternate between reasoning traces and actions (i.e., tool invocations) to accomplish complex goals. In ReAct, an agent supported by an LLM deliberates, invokes a tool, observes the outcome, and then repeats this cycle. Empirical evidence indicates that integrating chain‑of‑thought reasoning with tool invocation reduces hallucinations and improves success rates on benchmarks such as HotpotQA~\cite{yang2018hotpotqa} and ALFWorld~\cite{shridhar2020alfworld}.
+One of the most influential paradigms for agents that interact with external tools is ReAct~\cite{yao2022react}, in which agents iteratively alternate between reasoning traces and actions (i.e., tool invocations) to accomplish complex goals. In ReAct, an agent supported by an LLM deliberates, invokes a tool, observes the outcome, and then repeats this cycle. Empirical evidence indicates that integrating chain‑of‑thought reasoning with tool invocation reduces hallucinations and improves success rates on benchmarks such as HotpotQA~\cite{yang2018hotpotqa} and ALFWorld~\cite{shridhar2020alfworld}.
 
-%In industry settings, the iterative tool invocation proposed by the ReAct paradigm is commonly supported by MCP~\cite{mcp_intro_2024}, an open protocol that gives LLM-supported agents a uniform interface to invoke and discover tools exposed by external servers through JSON‑RPC 2.0. Major agentic frameworks developed by OpenAI, Google DeepMind, and Microsoft now provide MCP support for tool invocation~\cite{hou2025model}.
+In industry settings, the iterative tool invocation proposed by the ReAct paradigm is commonly supported by MCP~\cite{mcp_intro_2024}, an open protocol that gives LLM-supported agents a uniform interface to invoke and discover tools exposed by external servers through JSON‑RPC 2.0. Major agentic frameworks developed by OpenAI, Google DeepMind, and Microsoft now provide MCP support for tool invocation~\cite{hou2025model}.
 
-%Using MCP and the ReAct paradigm, before executing an enterprise workflow, LLM-supported agents have to load into their context or, informally speaking, reason about the tool definitions provided by MCP servers, which, for instance, may consume up to 55,000 tokens for a scenario with five MCP servers offering 58 tools in total, before the agent conversation begins \cite{anthropic_advanced_tool_use_2025}. Consequently, as the number of tools available grows, so does the token cost of loading definitions and routing intermediate results through context. However, as LLMs have shown remarkable effectiveness in generating code~\cite{joel2024survey}, an LLM-supported agent can use code‑execution invocation to call tools from MCP servers and reduce the cost of routing intermediate results through context. 
+Using MCP and the ReAct paradigm, before executing an enterprise workflow, LLM-supported agents have to load into their context or, informally speaking, reason about the tool definitions provided by MCP servers, which, for instance, may consume up to 55,000 tokens for a scenario with five MCP servers offering 58 tools in total, before the agent conversation begins \cite{anthropic_advanced_tool_use_2025}. Consequently, as the number of tools available grows, so does the token cost of loading definitions and routing intermediate results through context. However, as LLMs have shown remarkable effectiveness in generating code~\cite{joel2024survey}, an LLM-supported agent can use code‑execution invocation to call tools from MCP servers and reduce the cost of routing intermediate results through context. 
 
 In this context, several research efforts have been conducted to evaluate and benchmark agentic AI systems enabled by MCP. Dobriy et al.~\cite{dobriy2026agentic} evaluated LLM‑supported agents in the context of federated SPARQL querying. Their system architecture consisted of a single client communicating with a single MCP SPARQL server, primarily evaluating the validity of the generated SPARQL queries. In the domain of mobile computing, Kong et al.~\cite{kong2025mobileworld} proposed MobileWorld, a benchmark for mobile applications using agent-user interaction and MCP servers. With respect to the agentic AI system, their benchmark includes 40 tasks involving 64 tools provided by five MCP servers, evaluating task success rate and the average number of MCP calls. Mo et al.~\cite{mo2025livemcpbench} designed their benchmark to include 95 everyday tasks (e.g., lifestyle, shopping, and leisure activities), in which LLM-supported agents must interact with 70 MCP servers providing 527 tools. As before, their primary performance metric was task success rate, however, they also measured token consumption across several state‑of‑the‑art LLMs, with a particular focus on the costs associated with tool descriptions. Following a similar approach, Guo et al.~\cite{guo2026mcp} propose evaluating agentic AI systems using 600 real‑world everyday tasks (generated by LLMs but with human supervision). As in~\cite{mo2025livemcpbench}, the number of MCP servers and tools involved in the benchmark is also considerably large. It is worth mentioning that Guo et al. also propose evaluating token consumption (in addition to task success rate), however, token consumption is assessed from the perspective of the LLMs used without taking into account orchestration modalities. 
 
@@ -233,25 +233,25 @@ Each task execution was evaluated using three metrics:
 
 \subsubsection{Experiment runs.} The full experiment consisted of 582 task executions across the four system configurations (Fig.~\ref{fig:system_configurations}), eight MCP servers (Table~\ref{tab:servers}), three task types (single‑tool, pipeline, discovery), and three server-load conditions (minimal, moderate, maximal). It should be noted that results from the AlphaVantage MCP server were excluded due to persistent rate-limiting failures. 
 
-%Table~\ref{tab:config} summarizes the experimental configuration.
+Table~\ref{tab:config} summarizes the experimental configuration.
 
-%\begin{table}[H]
-%\caption{Summary of experimental settings}\label{tab:config}
-%\centering
-%\begin{tabular}{|l|l|}
-%\hline
-%\textbf{Parameter} & \textbf{Possible values} \\
-%\hline
-%AI model      & Claude 3.7 Sonnet \\
-%Temperature   & 0.2 \\
-%Total runs    & 582 \\
-%MCP servers   & 8 \\
-%Task types    & 3 (single‑tool, pipeline, discovery) \\
-%Agent types   & 4 (single‑agent DI/CI, multi‑agent DI/CI) \\
-%Load levels   & 3 (minimal, moderate, maximal) \\
-%\hline
-%\end{tabular}
-%\end{table}
+\begin{table}[H]
+\caption{Summary of experimental settings}\label{tab:config}
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Parameter} & \textbf{Possible values} \\
+\hline
+AI model      & Claude 3.7 Sonnet \\
+Temperature   & 0.2 \\
+Total runs    & 582 \\
+MCP servers   & 8 \\
+Task types    & 3 (single‑tool, pipeline, discovery) \\
+Agent types   & 4 (single‑agent DI/CI, multi‑agent DI/CI) \\
+Load levels   & 3 (minimal, moderate, maximal) \\
+\hline
+\end{tabular}
+\end{table}
 
 \subsubsection{Empirical results.} From the series of experiments, three main observations were obtained. To facilitate interpretation, the results (presented in Figs.~\ref{fig:grade}-\ref{fig:tokens} and Tables~\ref{tab:efficiency} and \ref{tab:tokens}) were grouped by task type and orchestration modality. A p-value less than 0.05 was considered significant. 
 
